@@ -1,6 +1,8 @@
 import React from 'react';
 import { Provider, createClient } from 'urql';
 
+import SelectMetrics from '../Features/Metrics/SelectMetrics';
+
 const client = createClient({
   url: 'https://react.eogresources.com/graphql',
 });
@@ -16,7 +18,7 @@ export default () => {
 const Metrics = () => {
   return (
     <div>
-      {`Metrics Works`}
+      <SelectMetrics />
     </div>
   )
 }
