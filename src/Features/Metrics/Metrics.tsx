@@ -14,6 +14,7 @@ import Chip from '@material-ui/core/Chip'
 import CloseIcon from '@material-ui/icons/Close';
 
 import { createStyles, makeStyles, withStyles, Theme } from '@material-ui/core/styles';
+import Measurements from '../Measurements/Measurements';
 
 const BootstrapInput = withStyles((theme: Theme) =>
   createStyles({
@@ -85,17 +86,6 @@ query {
 }
 `;
 
-const getLastKnownMeasurementQuery=`
-query($metricName: String!) {
-  getLastKnownMeasurement(metricName: $metricName) {
-    metric
-    at
-    value
-    unit
-  }
-}
-`
-
 const getMetrics = (state: IState) => {
   const { metrics } = state.metrics;
   console.log(state)
@@ -103,6 +93,8 @@ const getMetrics = (state: IState) => {
     metrics
   };
 };
+
+
 
 export default () => {
   return (
@@ -137,8 +129,6 @@ const Metrics = () => {
     }
     if (!data) return;
     dispatch(actions.getMetrics(data));
-    if(!selectedMetrics) return;
-    // dispatch(actions.)
   }, [dispatch, data, error, selectedMetrics]);
 
   if (fetching) return <LinearProgress />;
@@ -157,9 +147,9 @@ const Metrics = () => {
           <GridList cellHeight={100} className={classes.gridList} cols={3}>
           {selectedMetrics.map(metric => (
             <GridListTile key={metric} cols={1}>
-              <Paper>
-                {metric}
-              </Paper>
+              <Measurements
+                metric={metric}
+              />
             </GridListTile>
           ))}
           </GridList>
@@ -185,6 +175,17 @@ const Metrics = () => {
                 ))}
               </div>
             )}
+            MenuProps={{
+              anchorOrigin: {
+                vertical: "bottom",
+                horizontal: "left"
+              },
+              transformOrigin: {
+                vertical: "top",
+                horizontal: "left"
+              },
+              getContentAnchorEl:null,
+            }}
             >
             {
                 selectedMetrics.length === metrics.length ? ( 

@@ -31,9 +31,9 @@ const App = () => (
     <Provider store={store}>
       <Wrapper>
         <Header />
+        <Metrics />
         <NowWhat />
         <ToastContainer />
-        <Metrics />
       </Wrapper>
     </Provider>
   </MuiThemeProvider>
