@@ -4,12 +4,20 @@ export type Metrics = {
   getMetrics: string[];
 }
 
+export type Measurement = {
+  metric: string;
+  at: number;
+  value: number;
+  unit: string;
+}
+
 export type ApiErrorAction = {
   error: string;
 }
 
 const initialState = {
-  metrics: [''],
+  metrics: Array<string>(),
+  lastKnownMeasurement: Array<Measurement>()
 }
 
 const slice = createSlice({
@@ -20,9 +28,13 @@ const slice = createSlice({
       const { getMetrics } = action.payload
       state.metrics = getMetrics;
     },
-    metricsApiErrorReceived: (state, actin: PayloadAction<ApiErrorAction>) => state,
+    getLastKnownMeasurement:(state, action:PayloadAction<Measurement>) => {
+
+    },
+    metricsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state,
+    }
   }
-})
+)
 
 export const reducer = slice.reducer;
 export const actions = slice.actions;

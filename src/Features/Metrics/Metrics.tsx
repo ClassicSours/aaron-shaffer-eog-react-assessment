@@ -9,8 +9,9 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import InputBase from '@material-ui/core/InputBase';
 import MenuItem from '@material-ui/core/MenuItem';
-
-import Chip from '../../components/Chip'
+import {Paper, Grid, GridList, GridListTile} from '@material-ui/core'
+import Chip from '@material-ui/core/Chip'
+import CloseIcon from '@material-ui/icons/Close';
 
 import { createStyles, makeStyles, withStyles, Theme } from '@material-ui/core/styles';
 
@@ -27,6 +28,7 @@ const BootstrapInput = withStyles((theme: Theme) =>
       backgroundColor: theme.palette.background.paper,
       border: '1px solid #ced4da',
       fontSize: 16,
+      width: '500px',
       padding: '10px 26px 10px 12px',
       transition: theme.transitions.create(['border-color', 'box-shadow']),
       // Use the system font instead of the default Roboto font.
@@ -53,7 +55,14 @@ const BootstrapInput = withStyles((theme: Theme) =>
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    margin: {
+    root: {
+      flexGrow: 1,
+    },
+    gridList: {
+      height: "100%",
+      width: "100%",
+    },
+    formControl: {
       margin: theme.spacing(1),
     },
     chips: {
@@ -76,6 +85,17 @@ query {
 }
 `;
 
+const getLastKnownMeasurementQuery=`
+query($metricName: String!) {
+  getLastKnownMeasurement(metricName: $metricName) {
+    metric
+    at
+    value
+    unit
+  }
+}
+`
+
 const getMetrics = (state: IState) => {
   const { metrics } = state.metrics;
   console.log(state)
@@ -84,20 +104,18 @@ const getMetrics = (state: IState) => {
   };
 };
 
-
 export default () => {
   return (
     <Provider value={client}>
-      <SelectMetrics />
+      <Metrics />
     </Provider>
   );
 };
 
-const SelectMetrics = () => {
+const Metrics = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { metrics } = useSelector(getMetrics);
-  
+  const { metrics } = useSelector(getMetrics)
   const [result] = useQuery({
     query
   });
@@ -106,6 +124,10 @@ const SelectMetrics = () => {
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setSelectedMetrics(event.target.value as string[]);
   };
+
+  const handleDelete = (value: string) => {
+    setSelectedMetrics(selectedMetrics.filter(metric => metric !== value) as string[])
+  }
   
   const { fetching, data, error } = result;
   useEffect(() => {
@@ -115,36 +137,74 @@ const SelectMetrics = () => {
     }
     if (!data) return;
     dispatch(actions.getMetrics(data));
-  }, [dispatch, data, error]);
+    if(!selectedMetrics) return;
+    // dispatch(actions.)
+  }, [dispatch, data, error, selectedMetrics]);
 
   if (fetching) return <LinearProgress />;
-
+  
   console.log(data)
   return (
-    <FormControl className={classes.margin}>
-      <InputLabel id="metric-select-label">Metrics </InputLabel>
-      <Select
-        multiple
-        id="metric-select"
-        value={selectedMetrics}
-        onChange={handleChange}
-        input={<BootstrapInput />}
-        renderValue={selected => (
-          <div className={classes.chips}>
-              {(selected as string[]).map(value => (
-              <Chip key={value} label={value} className={classes.chip} />
-            ))}
-          </div>
-        )}
-        >
-          {
-          metrics
-            .map(metric => (
-              <MenuItem key={metric} value={metric} >
+    <div className={classes.root}>
+      <Grid
+        container
+        direction="row"
+        justify="flex-end"
+        alignItems="flex-start"
+        alignContent="flex-start"
+      >
+        <Grid item xs={8}>
+          <GridList cellHeight={100} className={classes.gridList} cols={3}>
+          {selectedMetrics.map(metric => (
+            <GridListTile key={metric} cols={1}>
+              <Paper>
                 {metric}
-              </MenuItem> 
+              </Paper>
+            </GridListTile>
           ))}
-        </Select>
-      </FormControl>
+          </GridList>
+        </Grid>
+        <Grid item xs={4}>    <FormControl className={classes.formControl}>
+          <InputLabel id="metric-select-label">Metrics </InputLabel>
+          <Select
+            multiple
+            id="metric-select"
+            value={selectedMetrics}
+            onChange={handleChange}
+            input={<BootstrapInput />}
+            renderValue={selected => (
+              <div className={classes.chips}>
+                  {(selected as string[]).map(value => (
+                  <Chip 
+                    key={value}
+                    label={value}
+                    className={classes.chip}
+                    onDelete={(e) => handleDelete(value)}
+                    deleteIcon={<CloseIcon id={value}/>}
+                  />
+                ))}
+              </div>
+            )}
+            >
+            {
+                selectedMetrics.length === metrics.length ? ( 
+                  <MenuItem disabled key={''} value={''}>
+                    {`No Options`}
+                  </MenuItem>
+                ) : (
+                  metrics
+                  .filter(metric => !selectedMetrics.includes(metric))
+                  .map(metric => (
+                    <MenuItem key={metric} value={metric} >
+                      {metric}
+                    </MenuItem> 
+                  ))
+                )
+              }
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
+    </div>
   )
 }
