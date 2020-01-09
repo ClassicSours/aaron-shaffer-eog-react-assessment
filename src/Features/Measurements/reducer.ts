@@ -1,12 +1,10 @@
 import { createSlice, PayloadAction } from 'redux-starter-kit';
 
 export type Measurement = {
-  getLastKnownMeasurement: {
-    metric: string;
-    at: number;
-    value: number;
-    unit: string;
-  }
+  metric: string;
+  at: number;
+  value: number;
+  unit: string;
 }
 
 export type ApiErrorAction = {
@@ -20,19 +18,21 @@ const initialState = {
   unit: ''
 }
 
-const slice = createSlice({
-  name: 'metrics',
-  initialState,
-  reducers: {
-    getLastKnownMeasurement:(state, action: PayloadAction<Measurement>) => {
-      const { getLastKnownMeasurement } = action.payload
-      state.metric = getLastKnownMeasurement.metric;
-      state.at = getLastKnownMeasurement.at;
-      state.value = getLastKnownMeasurement.value;
-      state.unit = getLastKnownMeasurement.unit;
+export const slice = createSlice(
+  {
+    name: `measurements`,
+    initialState,
+    reducers: {
+    measurementDataRecieved:(state, action: PayloadAction<Measurement>) => {
+      console.log(action)
+      const { metric, at, value, unit } = action.payload
+      state.metric = metric;
+      state.at = at;
+      state.value = value;
+      state.unit = unit;
     },
-    metricsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state}
-  }
+    measurementsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state},
+  },
 )
 
 export const reducer = slice.reducer;
