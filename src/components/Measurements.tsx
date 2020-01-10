@@ -1,20 +1,12 @@
 import React, {useEffect} from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { actions } from './reducer';
+import { useDispatch } from 'react-redux';
 import { Provider, createClient, useQuery } from 'urql';
-import { IState } from '../../store';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import { Measurement } from '../Features/Metrics/reducer';
 
 const client = createClient({
   url: 'https://react.eogresources.com/graphql',
 });
-
-const getMeasurements = (state: IState) => {
-  const { metric, at, value, unit } = state.measurements;
-  return {
-    metric, at, value, unit
-  };
-};
 
 const query=`
 query($metricName: String!) {
@@ -30,7 +22,7 @@ query($metricName: String!) {
 export default (props: ComponentProps) => {
   return (
     <Provider value={client}>
-      <Measurments 
+      <MeasurmentsCard 
         {...props}
       />
     </Provider>
@@ -39,39 +31,57 @@ export default (props: ComponentProps) => {
 
 interface ComponentProps {
   metricName: string;
+  actions: any;
 }
 
-const Measurments = (props: ComponentProps) => {
+const MeasurmentsCard = (props: ComponentProps) => {
   const dispatch = useDispatch();
-  const {metricName} = props
-  const {metric, at, value, unit} = useSelector(getMeasurements);
-  const [result] = useQuery({
+  const {metricName, actions} = props
+  const [result, executeQuery] = useQuery({
     query,
     variables: {
       metricName
-    }
+    },
+    requestPolicy: 'cache-and-network'
   })
+
+  const [measurement, setMeasurment] = React.useState<Measurement>()
+ 
   const { fetching, data, error } = result;
   useEffect(() => {
     if (error) {
-      dispatch(actions.measurementsApiErrorReceived({ error: error.message }));
+      dispatch(actions.metricsApiErrorReceived({ error: error.message }));
       return;
     }
     if (!data) return;
     const { getLastKnownMeasurement } = data;
+    console.log(data)
+    setMeasurment(getLastKnownMeasurement as Measurement)
     dispatch(actions.measurementDataRecieved(getLastKnownMeasurement));
+    const interval = setInterval(() => {
+      executeQuery()
+    }, 1300);
+    return () => clearInterval(interval);
+
   }, [dispatch, data, error]);
 
   if (fetching) return <LinearProgress />;
+  try {
   return (
     <div>
-      {`metric: ${metric}`}
+      {`metric: ${measurement!.metric}`}
       <br />
-      {`at: ${at}`}
+      {`at: ${measurement!.at}`}
       <br />
-      {`value: ${value}`}
+      {`value: ${measurement!.value}`}
       <br />
-      {`unit: ${unit}`}
+      {`unit: ${measurement!.unit}`}
     </div>
   )
+  } catch(e) {
+    return (
+      <div>
+      </div>
+    )
+  } 
 }

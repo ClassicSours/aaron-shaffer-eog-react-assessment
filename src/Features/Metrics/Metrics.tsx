@@ -14,7 +14,7 @@ import Chip from '@material-ui/core/Chip'
 import CloseIcon from '@material-ui/icons/Close';
 
 import { createStyles, makeStyles, withStyles, Theme } from '@material-ui/core/styles';
-import Measurements from '../Measurements/Measurements';
+import Measurements from '../../components/Measurements';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -108,7 +108,7 @@ const Metrics = () => {
     }
     if (!data) return;
     dispatch(actions.getMetrics(data));
-  }, [dispatch, data, error, selectedMetrics]);
+  }, [dispatch, data, error]);
 
   if (fetching) return <LinearProgress />;
   
@@ -128,6 +128,7 @@ const Metrics = () => {
             <GridListTile key={metric} cols={1}>
               <Measurements
                 metricName={metric}
+                actions={actions}
               />
             </GridListTile>
           ))}
