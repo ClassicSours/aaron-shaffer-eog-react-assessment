@@ -7,13 +7,16 @@ import { IState } from '../../store';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
-import InputBase from '@material-ui/core/InputBase';
 import MenuItem from '@material-ui/core/MenuItem';
-import {Paper, Grid, GridList, GridListTile, InputAdornment, IconButton} from '@material-ui/core'
+import InputAdornment from '@material-ui/core/InputAdornment'
+import IconButton from '@material-ui/core/IconButton'
+import Grid from '@material-ui/core/Grid'
+import GridList from '@material-ui/core/GridList'
+import GridListTile from '@material-ui/core/GridListTile'
 import Chip from '@material-ui/core/Chip'
 import CloseIcon from '@material-ui/icons/Close';
 
-import { createStyles, makeStyles, withStyles, Theme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Measurements from '../../components/Measurements';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -25,8 +28,11 @@ const useStyles = makeStyles((theme: Theme) =>
       height: "100%",
       width: "100%",
     },
+    grid: {
+      padding: "30px"
+    },
     formControl: {
-      margin: theme.spacing(1),
+      width: "100%",
     },
     chips: {
       display: 'flex',
@@ -36,11 +42,10 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: 2,
     },
     select: {
-      width: "500px"
+      width: "100%"
     },
     iconButton: {
       "&:hover": {
-        //you want this to be the same as the backgroundColor above
         backgroundColor: "transparent"
     }
     }
@@ -88,10 +93,6 @@ const Metrics = () => {
     setSelectedMetrics(event.target.value as string[]);
   };
 
-  const handleClickMetric = (event: React.MouseEvent) => {
-    console.log(event.target)
-  }
-
   const handleClear = () => {
     setSelectedMetrics([])
   }
@@ -122,8 +123,8 @@ const Metrics = () => {
         alignItems="flex-start"
         alignContent="flex-start"
       >
-        <Grid item xs={8}>
-          <GridList cellHeight={100} className={classes.gridList} cols={3}>
+        <Grid item xs={7} className={classes.grid}>
+          <GridList cellHeight={'auto'} className={classes.gridList} cols={3} spacing={15}>
           {selectedMetrics.map(metric => (
             <GridListTile key={metric} cols={1}>
               <Measurements
@@ -134,15 +135,15 @@ const Metrics = () => {
           ))}
           </GridList>
         </Grid>
-        <Grid item xs={4}>
-          <FormControl className={classes.formControl}>
-          <InputLabel id="metric-select-label">Metrics </InputLabel>
+        <Grid item xs={1} />
+        <Grid item xs={4} className={classes.grid}>
+          <FormControl className={classes.formControl} variant="outlined">
+          <InputLabel id="metric-select-label">Metrics</InputLabel>
           <Select
             multiple
             id="metric-select"
             value={selectedMetrics}
             onChange={handleChange}
-            variant="outlined"
             className={classes.select}
             endAdornment={
               <InputAdornment position="start">
@@ -182,7 +183,7 @@ const Metrics = () => {
             { 
               selectedMetrics.length === metrics.length ? ( 
                 <MenuItem disabled key={''} value={''}>
-                  {`No Options`}
+                  {'No Options'}
                 </MenuItem> 
                 ) : (
                 metrics
@@ -196,6 +197,9 @@ const Metrics = () => {
               }
             </Select>
           </FormControl>
+        </Grid>
+        <Grid item xs={12} className={classes.grid}>
+          Chart
         </Grid>
       </Grid>
     </div>

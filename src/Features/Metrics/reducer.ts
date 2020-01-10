@@ -33,6 +33,9 @@ const slice = createSlice({
       const { metric } = action.payload
       state.measurements.set(metric,action.payload)
     },
+    handleClose:(state, actions: PayloadAction<string>) => {
+      console.log(state)
+    },
     metricsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state
   },
 })
