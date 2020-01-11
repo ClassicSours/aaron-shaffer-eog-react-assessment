@@ -10,7 +10,8 @@ import {
   subscriptionExchange,
   dedupExchange,
   useQuery,
-  useSubscription
+  useSubscription,
+  Subscription
 } from 'urql';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { useDispatch, useSelector } from 'react-redux';
@@ -32,18 +33,17 @@ query {
 `;
 
 const subscription=gql`
-subscription {
+subscription newMeasurement {
   newMeasurement {
     metric,
     at,
     value,
-    unit,
+    unit
   }
 }
 `;
 
 const getMetrics = (state: IState) => {
-  console.log(state)
   return {
     ...state.metrics2
   };
@@ -56,7 +56,10 @@ const client = createClient({
     cacheExchange,
     fetchExchange,
     subscriptionExchange({
-      forwardSubscription: operation => subscriptionClient.request(operation),
+      forwardSubscription: (operation) => {
+       console.log(operation)
+       return subscriptionClient.request(operation)
+      }
     }),
   ],
 });
@@ -74,23 +77,20 @@ const MetricsSubscription = () => {
 
   const { metrics, measurements, selectedMetrics } = useSelector(getMetrics)
 
-  const [queryResult] = useQuery({
-    query: query
-  });
+  const [queryResult] = useQuery({query: query});
+  const [subscriptionResult] = useSubscription({query: subscription});
 
-  const [subscriptionResult] = useSubscription({ 
-    query: subscription
-  });
+  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    dispatch(actions.setSelectedMetrics(event.target.value as string[]))
+  };
 
-  const { fetching } = queryResult;
-  const [measurement, setMeasurment] = React.useState<Measurement>()
-  
-  const memoizedSetMeasurement = useCallback(
-    (getLastKnownMeasurement) => {
-      dispatch(actions.measurementDataRecieved(getLastKnownMeasurement))
-    },
-    [],
-  );
+  const handleClear = () => {
+    dispatch(actions.setSelectedMetrics([]))
+  }
+
+  const handleDelete = (metricName: string) => {
+    dispatch(actions.removeSelectedMetric(metricName))
+  }
 
   useEffect(() => {
     if(queryResult.error) {
@@ -105,17 +105,21 @@ const MetricsSubscription = () => {
     dispatch(actions.getMetrics(queryResult.data));
     if(!subscriptionResult.data) return;
     let { newMeasurement } = subscriptionResult.data
-    memoizedSetMeasurement(newMeasurement)
-  },[dispatch, queryResult,subscriptionResult, actions, memoizedSetMeasurement])
+    dispatch(actions.measurementDataRecieved(newMeasurement))
+  },[dispatch, queryResult,subscriptionResult, actions])
 
-  if (fetching) return <LinearProgress />;
+  if (queryResult.fetching) return <LinearProgress />;
   // console.log(queryResult)
   // console.log(subscriptionResult)
   return (
     <div>
       {"SubscriptionClient"}
       {metrics}
-      {/* {measurements} */}
+      {measurements.forEach(measurement => 
+        <div>
+          {measurement}
+        </div>
+      )}
       {selectedMetrics}
     </div>
   )
