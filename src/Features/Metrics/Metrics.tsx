@@ -10,14 +10,15 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputAdornment from '@material-ui/core/InputAdornment'
 import IconButton from '@material-ui/core/IconButton'
+import CloseIcon from '@material-ui/icons/Close';
 import Grid from '@material-ui/core/Grid'
 import GridList from '@material-ui/core/GridList'
 import GridListTile from '@material-ui/core/GridListTile'
 import Chip from '@material-ui/core/Chip'
-import CloseIcon from '@material-ui/icons/Close';
-
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import Measurements from '../../components/Measurements';
+
+import Measurements from './Measurements';
+import HistoricalChart from './HistoricalChart';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -47,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) =>
     iconButton: {
       "&:hover": {
         backgroundColor: "transparent"
-    }
+      }
     }
   }),
 );
@@ -63,10 +64,8 @@ query {
 `;
 
 const getMetrics = (state: IState) => {
-  const { metrics } = state.metrics;
-  console.log(state)
   return {
-    metrics
+    ...state.metrics
   };
 };
 
@@ -83,22 +82,21 @@ export default () => {
 const Metrics = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { metrics } = useSelector(getMetrics)
+  const { metrics, selectedMetrics } = useSelector(getMetrics)
   const [result] = useQuery({
     query
   });
 
-  const [selectedMetrics, setSelectedMetrics] = React.useState<string[]>([]);
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setSelectedMetrics(event.target.value as string[]);
+    dispatch(actions.setSelectedMetrics(event.target.value as string[]))
   };
 
   const handleClear = () => {
-    setSelectedMetrics([])
+    dispatch(actions.setSelectedMetrics([]))
   }
 
-  const handleDelete = (value: string) => {
-    setSelectedMetrics(selectedMetrics.filter(metric => metric !== value) as string[])
+  const handleDelete = (metricName: string) => {
+    dispatch(actions.removeSelectedMetric(metricName))
   }
   
   const { fetching, data, error } = result;
@@ -112,8 +110,6 @@ const Metrics = () => {
   }, [dispatch, data, error]);
 
   if (fetching) return <LinearProgress />;
-  
-  console.log(data)
   return (
     <div className={classes.root}>
       <Grid
@@ -124,7 +120,7 @@ const Metrics = () => {
         alignContent="flex-start"
       >
         <Grid item xs={7} className={classes.grid}>
-          <GridList cellHeight={'auto'} className={classes.gridList} cols={3} spacing={15}>
+          <GridList cellHeight={'auto'} className={classes.gridList} cols={2} spacing={15}>
           {selectedMetrics.map(metric => (
             <GridListTile key={metric} cols={1}>
               <Measurements
@@ -199,7 +195,9 @@ const Metrics = () => {
           </FormControl>
         </Grid>
         <Grid item xs={12} className={classes.grid}>
-          Chart
+          <HistoricalChart 
+            actions={actions}
+          />
         </Grid>
       </Grid>
     </div>

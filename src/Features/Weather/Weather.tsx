@@ -52,7 +52,7 @@ const Weather = () => {
     query,
     variables: {
       latLong,
-    },
+    }
   });
   const { fetching, data, error } = result;
   useEffect(() => {

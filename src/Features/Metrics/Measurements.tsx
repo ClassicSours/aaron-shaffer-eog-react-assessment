@@ -1,9 +1,11 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useCallback} from 'react';
 import { useDispatch } from 'react-redux';
 import { Provider, createClient, useQuery } from 'urql';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { Measurement } from '../Features/Metrics/reducer';
+import { Measurement } from './reducer';
 import { makeStyles, Card, CardHeader} from '@material-ui/core';
+import IconButton from '@material-ui/core/IconButton'
+import CloseIcon from '@material-ui/icons/Close';
 
 const client = createClient({
   url: 'https://react.eogresources.com/graphql',
@@ -37,8 +39,18 @@ interface ComponentProps {
 
 const useStyles = makeStyles({
   card: {
-    width: '100%',
-    minWidth: '200px',
+    // width: "auto !important",
+    minWidth: "325px",
+    float: "left",
+    clear: "both",  
+  },
+  subheader: {
+    textAlign: "right"
+  },
+  iconButton: {
+    "&:hover": {
+      backgroundColor: "transparent"
+    }
   }
 });
 
@@ -46,16 +58,26 @@ const MeasurmentsCard = (props: ComponentProps) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const {metricName, actions} = props
-  const [result, executeQuery] = useQuery({
+  const [result] = useQuery({
     query,
     variables: {
       metricName
     },
+    pollInterval: 1300,
     requestPolicy: 'cache-and-network'
   })
 
   const [measurement, setMeasurment] = React.useState<Measurement>()
- 
+  const memoizedSetMeasurement = useCallback(
+    (getLastKnownMeasurement) => {
+      setMeasurment(getLastKnownMeasurement as Measurement)
+    },
+    [],
+  );
+  const handleDelete = (metricName: string) => {
+    dispatch(actions.removeSelectedMetric(metricName))
+  }
+
   const { fetching, data, error } = result;
   useEffect(() => {
     if (error) {
@@ -64,13 +86,9 @@ const MeasurmentsCard = (props: ComponentProps) => {
     }
     if (!data) return;
     const { getLastKnownMeasurement } = data;
-    setMeasurment(getLastKnownMeasurement as Measurement)
+    memoizedSetMeasurement(getLastKnownMeasurement)
     dispatch(actions.measurementDataRecieved(getLastKnownMeasurement));
-    const interval = setInterval(() => {
-      executeQuery()
-    }, 1300);
-    return () => clearInterval(interval);
-  }, [dispatch, data, error, actions, executeQuery]);
+  }, [dispatch, data, error, actions, memoizedSetMeasurement]);
 
   if (fetching || !measurement) return <LinearProgress />;
 
@@ -79,8 +97,16 @@ const MeasurmentsCard = (props: ComponentProps) => {
       <CardHeader
         title={measurement!.metric}
         titleTypographyProps={{variant:"h6", component:"h6", noWrap:true}}
-        subheader={`${measurement!.value} ${measurement!.unit}`}
-        subheaderTypographyProps={{variant:"h3", component:"h3", noWrap:true}}
+        subheader={`${measurement.value} ${measurement.unit}`}
+        subheaderTypographyProps={{variant:"h3", component:"h3", noWrap:true, className:classes.subheader}}
+        action={
+          <IconButton 
+            className={classes.iconButton}
+            onClick={(e) => handleDelete(measurement.metric)}
+            >
+            <CloseIcon />
+          </IconButton>
+        }
       />
     </Card>
   )
