@@ -1,18 +1,8 @@
 import { createSlice, PayloadAction } from 'redux-starter-kit';
+import { ApiErrorAction, Measurement } from '../../types';
 
 type Metrics = {
   getMetrics: string[];
-}
-
-export type Measurement = {
-  metric: string;
-  at: number;
-  value: number;
-  unit: string;
-}
-
-export type ApiErrorAction = {
-  error: string;
 }
 
 const initialState = {

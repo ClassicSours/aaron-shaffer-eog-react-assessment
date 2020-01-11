@@ -9,7 +9,8 @@ import Header from './components/Header';
 import Wrapper from './components/Wrapper';
 import NowWhat from './components/NowWhat';
 import Metrics from './Features/Metrics/Metrics';
-import MetricsSubscription from './Features/Subscription/MetricsSubscription'
+import MetricsSubscription from './Features/Subscription/Metrics'
+
 const store = createStore();
 const theme = createMuiTheme({
   palette: {

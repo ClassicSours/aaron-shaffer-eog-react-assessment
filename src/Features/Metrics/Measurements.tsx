@@ -2,10 +2,10 @@ import React, {useEffect, useCallback} from 'react';
 import { useDispatch } from 'react-redux';
 import { Provider, createClient, useQuery } from 'urql';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { Measurement } from './reducer';
 import { makeStyles, Card, CardHeader} from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close';
+import { Measurement } from '../../types/Measurement';
 
 const client = createClient({
   url: 'https://react.eogresources.com/graphql',
@@ -71,7 +71,7 @@ const MeasurmentsCard = (props: ComponentProps) => {
   const [measurement, setMeasurment] = React.useState<Measurement>()
   const memoizedSetMeasurement = useCallback(
     (getLastKnownMeasurement) => {
-      setMeasurment(getLastKnownMeasurement as Measurement)
+      setMeasurment(getLastKnownMeasurement)
     },
     [],
   );
@@ -97,7 +97,7 @@ const MeasurmentsCard = (props: ComponentProps) => {
   return (
     <Card className={classes.card}>
       <CardHeader
-        title={measurement!.metric}
+        title={measurement.metric}
         titleTypographyProps={{variant:"h6", component:"h6", noWrap:true}}
         subheader={`${measurement.value} ${measurement.unit}`}
         subheaderTypographyProps={{variant:"h3", component:"h3", noWrap:true, className:classes.subheader}}

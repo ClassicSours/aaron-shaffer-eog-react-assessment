@@ -2,21 +2,22 @@ import React, {useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { actions } from './reducer'
 import { Provider, createClient, useQuery } from 'urql';
-import LinearProgress from '@material-ui/core/LinearProgress';
 import { IState } from '../../store';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import InputAdornment from '@material-ui/core/InputAdornment'
-import IconButton from '@material-ui/core/IconButton'
-import CloseIcon from '@material-ui/icons/Close';
-import Grid from '@material-ui/core/Grid'
-import GridList from '@material-ui/core/GridList'
-import GridListTile from '@material-ui/core/GridListTile'
-import Chip from '@material-ui/core/Chip'
+import { 
+  FormControl, 
+  InputLabel, 
+  Select, 
+  MenuItem, 
+  IconButton,
+  InputAdornment,
+  Grid, 
+  GridList,
+  GridListTile,
+  Chip
+} from '@material-ui/core';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-
+import CloseIcon from '@material-ui/icons/Close';
 import Measurements from './Measurements';
 import HistoricalChart from './HistoricalChart';
 
@@ -68,8 +69,6 @@ const getMetrics = (state: IState) => {
     ...state.metrics
   };
 };
-
-
 
 export default () => {
   return (
