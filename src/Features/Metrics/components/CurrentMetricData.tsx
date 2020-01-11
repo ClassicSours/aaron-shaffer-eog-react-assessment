@@ -1,13 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { useDispatch } from 'react-redux';
-import { makeStyles, Card, CardHeader, LinearProgress} from '@material-ui/core';
+import { makeStyles, Card, CardHeader} from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close';
 import { Measurement } from '../../../types';
 
 const useStyles = makeStyles({
   card: {
-    // width: "auto !important",
     minWidth: "325px",
     float: "left",
     clear: "both",  
@@ -23,37 +22,27 @@ const useStyles = makeStyles({
 });
 
 export default (props: ComponentProps) => {
-  console.log(props)
   return (
-    <NewMeasurement 
+    <CurrentMetricData
       {...props}
     />
   )
 }
 
 interface ComponentProps {
-  measurement: Measurement | undefined,
+  measurement: Measurement,
   actions: any,
 }
 
-const NewMeasurement = (props: ComponentProps) => {
+const CurrentMetricData = (props: ComponentProps) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const { measurement, actions } = props
-  // only update when at changes
-  // const memoized_measurement = useMemo((measurements.get(metricName)) => measurement, [measurement])
-  
-  const handleDelete = (metricName: string) => {
-    dispatch(actions.removeSelectedMetric(metricName))
+
+  const handleDelete = (measurement: Measurement) => {
+    dispatch(actions.removeSelectedMetric(measurement.metric))
   }
 
-  if(!measurement) {
-    return (
-      <Card className={classes.card}>
-        <LinearProgress />
-      </Card>
-    )
-  }
   return (
   <Card className={classes.card}>
       <CardHeader
@@ -64,7 +53,7 @@ const NewMeasurement = (props: ComponentProps) => {
         action={
           <IconButton 
             className={classes.iconButton}
-            onClick={(e) => handleDelete(measurement.metric)}
+            onClick={(e) => handleDelete(measurement)}
             >
             <CloseIcon />
           </IconButton>

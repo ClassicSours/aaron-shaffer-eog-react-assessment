@@ -1,8 +1,19 @@
-import React, {useEffect} from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { actions } from './reducer'
-import { Provider, createClient, useQuery } from 'urql';
-import { IState } from '../../store';
+import gql from 'graphql-tag';
+import {
+  cacheExchange,
+  createClient,
+  debugExchange,
+  fetchExchange,
+  Provider,
+  subscriptionExchange,
+  dedupExchange,
+  useQuery,
+  useMutation,
+  useSubscription
+} from 'urql';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { 
   LinearProgress,
   FormControl, 
@@ -18,8 +29,10 @@ import {
 } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
-import Measurements from './Measurements';
-import HistoricalChart from './HistoricalChart';
+import { actions } from './reducer'
+import { IState } from '../../store';
+import CurrentMetricData from './components/CurrentMetricData'
+import HistoricalMetricData from './components/HistoricalMetricData'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -54,15 +67,67 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const client = createClient({
-  url: 'https://react.eogresources.com/graphql',
-});
-
-const query = `
+const query=gql`
 query {
   getMetrics
 }
 `;
+
+const getLastKnownMeasurementQuery=gql`
+query($metricName: String!) {
+  getLastKnownMeasurement(metricName: $metricName) {
+    metric
+    at
+    value
+    unit
+  }
+}
+`;
+
+const subscription=gql`
+subscription {
+  newMeasurement {
+    metric,
+    at,
+    value,
+    unit
+  }
+}
+`;
+const mutation=gql`
+query ($input: [MeasurementQuery]) {
+  getMultipleMeasurements(input: $input) {
+    metric 
+    measurements {
+      at
+      value
+      metric
+      unit
+    }
+  }
+} 
+`
+
+const subscriptionClient = new SubscriptionClient(
+  'ws://react.eogresources.com/graphql',
+  {}
+);
+
+const client = createClient({
+  url: 'https://react.eogresources.com/graphql',
+  exchanges: [
+    dedupExchange,
+    // debugExchange,
+    cacheExchange,
+    fetchExchange,
+    subscriptionExchange({
+      forwardSubscription: (operation) => {
+       console.log(operation)
+       return subscriptionClient.request(operation)
+      }
+    }),
+  ],
+});
 
 const getMetrics = (state: IState) => {
   return {
@@ -75,18 +140,18 @@ export default () => {
     <Provider value={client}>
       <Metrics />
     </Provider>
-  );
-};
+  )
+}
 
 const Metrics = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { metrics, selectedMetrics } = useSelector(getMetrics)
-  const [result] = useQuery({
-    query
-  });
-  const { fetching, data, error } = result;
 
+  const { metrics, selectedMetrics, newMeasurements } = useSelector(getMetrics)
+
+  const [queryResult] = useQuery({query: query});
+
+  const [subscriptionResult] = useSubscription({query: subscription});
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     dispatch(actions.setSelectedMetrics(event.target.value as string[]))
   };
@@ -98,17 +163,24 @@ const Metrics = () => {
   const handleDelete = (metricName: string) => {
     dispatch(actions.removeSelectedMetric(metricName))
   }
-  
+
   useEffect(() => {
-    if (error) {
-      dispatch(actions.metricsApiErrorReceived({ error: error.message }));
+    if(queryResult.error) {
+      dispatch(actions.metricsApiErrorReceived({error: queryResult.error.message}))
       return;
     }
-    if (!data) return;
-    dispatch(actions.getMetrics(data));
-  }, [dispatch, data, error]);
+    if(subscriptionResult.error) {
+      dispatch(actions.metricsApiErrorReceived({error: subscriptionResult.error.message}))
+      return;
+    }
+    if (!queryResult.data) return;
+    dispatch(actions.getMetrics(queryResult.data));
+    if(!subscriptionResult.data) return;
+    let { newMeasurement } = subscriptionResult.data
+    dispatch(actions.measurementDataRecieved(newMeasurement))
+  },[dispatch, queryResult,subscriptionResult])
 
-  if (fetching) return <LinearProgress />;
+  if (queryResult.fetching) return <LinearProgress />;
   return (
     <div className={classes.root}>
       <Grid
@@ -119,15 +191,18 @@ const Metrics = () => {
         alignContent="flex-start"
       >
         <Grid item xs={7} className={classes.grid}>
-          <GridList cellHeight={'auto'} className={classes.gridList} cols={2} spacing={15}>
-          {selectedMetrics.map(metric => (
-            <GridListTile key={metric} cols={1}>
-              <Measurements
-                metricName={metric}
-                actions={actions}
-              />
-            </GridListTile>
-          ))}
+          <GridList cellHeight={'auto'} className={classes.gridList} cols={3} spacing={15}>
+            {selectedMetrics.map(metric => {
+              const measurement = newMeasurements.get(metric);
+              if (measurement) {
+                return (<GridListTile key={metric} cols={1}>
+                  <CurrentMetricData 
+                    measurement={measurement} 
+                    actions={actions} 
+                  />
+                </GridListTile>);
+              }
+            })}
           </GridList>
         </Grid>
         <Grid item xs={1} />
@@ -193,8 +268,9 @@ const Metrics = () => {
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={12} className={classes.grid}>
-          <HistoricalChart 
+        <Grid item xs={12}>
+          <HistoricalMetricData
+            data={undefined}
             actions={actions}
           />
         </Grid>
