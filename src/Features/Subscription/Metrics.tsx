@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { IState } from '../../store';
 import {
@@ -14,9 +14,11 @@ import {
 } from 'urql';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import { useDispatch, useSelector } from 'react-redux';
-import { MeasurementEntry, Measurement, MeasurementResponse } from './components';
+import { MeasurementEntry, MeasurementResponse } from './components';
 import gql from 'graphql-tag';
 import { actions } from './reducer'
+import { Measurement } from '../../types';
+import { subscribe } from 'graphql';
 
 const subscriptionClient = new SubscriptionClient(
   'ws://react.eogresources.com/graphql',
@@ -41,6 +43,7 @@ subscription {
 `;
 
 const getMetrics = (state: IState) => {
+  console.log(state)
   return {
     ...state.metrics2
   };
@@ -49,7 +52,7 @@ const client = createClient({
   url: 'https://react.eogresources.com/graphql',
   exchanges: [
     dedupExchange,
-    // debugExchange,
+    debugExchange,
     cacheExchange,
     fetchExchange,
     subscriptionExchange({
@@ -80,7 +83,16 @@ const MetricsSubscription = () => {
   });
 
   const { fetching } = queryResult;
-  useCallback(() => {
+  const [measurement, setMeasurment] = React.useState<Measurement>()
+  
+  const memoizedSetMeasurement = useCallback(
+    (getLastKnownMeasurement) => {
+      dispatch(actions.measurementDataRecieved(getLastKnownMeasurement))
+    },
+    [],
+  );
+
+  useEffect(() => {
     if(queryResult.error) {
       dispatch(actions.metricsApiErrorReceived({error: queryResult.error.message}))
       return;
@@ -91,16 +103,19 @@ const MetricsSubscription = () => {
     }
     if (!queryResult.data) return;
     dispatch(actions.getMetrics(queryResult.data));
-    dispatch(actions.measurementDataRecieved(subscriptionResult.data))
-  },[queryResult,subscriptionResult])
+    if(!subscriptionResult.data) return;
+    let { newMeasurement } = subscriptionResult.data
+    memoizedSetMeasurement(newMeasurement)
+  },[dispatch, queryResult,subscriptionResult, actions, memoizedSetMeasurement])
 
   if (fetching) return <LinearProgress />;
-
+  // console.log(queryResult)
+  // console.log(subscriptionResult)
   return (
     <div>
       {"SubscriptionClient"}
       {metrics}
-      {measurements}
+      {/* {measurements} */}
       {selectedMetrics}
     </div>
   )
