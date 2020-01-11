@@ -86,6 +86,7 @@ const Metrics = () => {
   const [result] = useQuery({
     query
   });
+  const { fetching, data, error } = result;
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     dispatch(actions.setSelectedMetrics(event.target.value as string[]))
@@ -99,7 +100,6 @@ const Metrics = () => {
     dispatch(actions.removeSelectedMetric(metricName))
   }
   
-  const { fetching, data, error } = result;
   useEffect(() => {
     if (error) {
       dispatch(actions.metricsApiErrorReceived({ error: error.message }));

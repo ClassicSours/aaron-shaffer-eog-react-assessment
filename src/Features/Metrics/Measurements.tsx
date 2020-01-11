@@ -58,6 +58,7 @@ const MeasurmentsCard = (props: ComponentProps) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const {metricName, actions} = props
+  
   const [result] = useQuery({
     query,
     variables: {
@@ -74,6 +75,7 @@ const MeasurmentsCard = (props: ComponentProps) => {
     },
     [],
   );
+
   const handleDelete = (metricName: string) => {
     dispatch(actions.removeSelectedMetric(metricName))
   }

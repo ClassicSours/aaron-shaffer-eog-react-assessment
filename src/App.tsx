@@ -9,7 +9,7 @@ import Header from './components/Header';
 import Wrapper from './components/Wrapper';
 import NowWhat from './components/NowWhat';
 import Metrics from './Features/Metrics/Metrics';
-
+import MetricsSubscription from './Features/Subscription/MetricsSubscription'
 const store = createStore();
 const theme = createMuiTheme({
   palette: {
@@ -32,6 +32,7 @@ const App = () => (
       <Wrapper>
         <Header />
         <Metrics />
+        <MetricsSubscription />
         <NowWhat />
         <ToastContainer />
       </Wrapper>
