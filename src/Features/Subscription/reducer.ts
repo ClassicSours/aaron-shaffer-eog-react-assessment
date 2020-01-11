@@ -1,13 +1,15 @@
+import React from 'react';
 import { createSlice, PayloadAction } from 'redux-starter-kit';
-import { ApiErrorAction, Measurement } from '../../types';
-import { useCallback } from 'react';
-type Metrics = {
-  getMetrics: string[];
-}
+import { ApiErrorAction, Measurement, Metrics } from '../../types';
+
 const initialState = {
   metrics: Array<string>(),
-  measurements: new Map<string, Measurement[]>(),
-  selectedMetrics:Array<string>()
+  selectedMetrics:Array<string>(),
+
+  selectedMeasurements: Array<Measurement>(),
+
+  newMeasurements: new Map<string, Measurement>(),
+  measurements: new Map<string, Array<Measurement>>(),
 }
 
 const slice = createSlice({
@@ -28,14 +30,15 @@ const slice = createSlice({
     },
     measurementDataRecieved:(state, action:PayloadAction<Measurement>) => {
       const { payload } = action
-      const { metric, at, value, unit } = payload
-      console.log(payload)
-      if (!state.measurements.get(metric)) {
-        state.measurements.set(metric, [payload])
-      } else {
-        state.measurements.get(metric)!.push(action.payload)
-      }
-      console.log(state.measurements.get(metric))
+      const { metric } = payload
+      // state.measurements.set(metric, [...state.recentMeasurements.get(metric),payload])
+      console.log(state.measurements)
+      state.newMeasurements.set(metric,payload)
+      console.log(state.newMeasurements.get(metric))
+      // const [measurements] = state.measurements.get(metric)
+      // state.measurements.set(metric,[...state.measurements,payload])
+      console.log(state.selectedMeasurements)
+      // state.recentMeasurements.add(payload)
     },
     metricsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state
   },

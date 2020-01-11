@@ -31,7 +31,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import { actions } from './reducer'
 import { IState } from '../../store';
 import { Measurement } from '../../types';
-import { subscribe } from 'graphql';
+import NewMeasurement from './components/NewMeasurement'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -73,7 +73,7 @@ query {
 `;
 
 const subscription=gql`
-subscription newMeasurement {
+subscription {
   newMeasurement {
     metric,
     at,
@@ -82,6 +82,19 @@ subscription newMeasurement {
   }
 }
 `;
+const multipleMeasurements=gql`
+query ($input: [MeasurementQuery]) {
+  getMultipleMeasurements(input: $input) {
+    metric 
+    measurements {
+      at
+      value
+      metric
+      unit
+    }
+  }
+} 
+`
 
 const subscriptionClient = new SubscriptionClient(
   'ws://react.eogresources.com/graphql',
@@ -92,7 +105,7 @@ const client = createClient({
   url: 'https://react.eogresources.com/graphql',
   exchanges: [
     dedupExchange,
-    debugExchange,
+    // debugExchange,
     cacheExchange,
     fetchExchange,
     subscriptionExchange({
@@ -122,7 +135,7 @@ const MetricsSubscription = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
 
-  const { metrics, measurements, selectedMetrics } = useSelector(getMetrics)
+  const { metrics, measurements, selectedMetrics, newMeasurements } = useSelector(getMetrics)
 
   const [queryResult] = useQuery({query: query});
   const [subscriptionResult] = useSubscription({query: subscription});
@@ -156,18 +169,91 @@ const MetricsSubscription = () => {
   },[dispatch, queryResult,subscriptionResult, actions])
 
   if (queryResult.fetching) return <LinearProgress />;
-  // console.log(queryResult)
-  // console.log(subscriptionResult)
   return (
-    <div>
-      {"SubscriptionClient"}
-      {metrics}
-      {measurements.forEach(measurement => 
-        <div>
-          {measurement}
-        </div>
-      )}
-      {selectedMetrics}
+    <div className={classes.root}>
+      <Grid
+        container
+        direction="row"
+        justify="flex-end"
+        alignItems="flex-start"
+        alignContent="flex-start"
+      >
+        <Grid item xs={7} className={classes.grid}>
+          <GridList cellHeight={'auto'} className={classes.gridList} cols={3} spacing={15}>
+            {selectedMetrics.map(metric => (
+              <GridListTile key={metric} cols={1}>
+                <NewMeasurement
+                  measurement={newMeasurements.get(metric)}
+                  actions={actions}
+                />
+              </GridListTile>
+            ))}
+          </GridList>
+        </Grid>
+        <Grid item xs={1} />
+        <Grid item xs={4} className={classes.grid}>
+          <FormControl className={classes.formControl} variant="outlined">
+          <InputLabel id="metric-select-label">Metrics</InputLabel>
+          <Select
+            multiple
+            id="metric-select"
+            value={selectedMetrics}
+            onChange={handleChange}
+            className={classes.select}
+            endAdornment={
+              <InputAdornment position="start">
+                <IconButton
+                  className={classes.iconButton}
+                  onClick={handleClear}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </InputAdornment>
+            }
+            renderValue={selected => (
+              <div className={classes.chips}>
+                  {(selected as string[]).map(value => (
+                  <Chip 
+                    key={value}
+                    label={value}
+                    className={classes.chip}
+                    onDelete={(e) => handleDelete(value)}
+                    deleteIcon={<CloseIcon id={value}/>}
+                  />
+                ))}
+              </div>
+            )}
+            MenuProps={{
+              anchorOrigin: {
+                vertical: "bottom",
+                horizontal: "left"
+              },
+              transformOrigin: {
+                vertical: "top",
+                horizontal: "left"
+              },
+              getContentAnchorEl:null,
+            }}
+            >
+            { 
+              selectedMetrics.length === metrics.length ? ( 
+                <MenuItem disabled key={''} value={''}>
+                  {'No Options'}
+                </MenuItem> 
+                ) : (
+                metrics
+                  .filter(metric => !selectedMetrics.includes(metric))
+                  .map(metric => (
+                    <MenuItem key={metric} value={metric}>
+                      {metric}
+                    </MenuItem> 
+                  ))
+                )
+              }
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
     </div>
   )
 }
