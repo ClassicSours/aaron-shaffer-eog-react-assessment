@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
-import { SubscriptionClient } from 'subscriptions-transport-ws';
-import { IState } from '../../store';
+import { useDispatch, useSelector } from 'react-redux';
+import gql from 'graphql-tag';
 import {
   cacheExchange,
   createClient,
@@ -10,20 +10,60 @@ import {
   subscriptionExchange,
   dedupExchange,
   useQuery,
-  useSubscription,
-  Subscription
+  useSubscription
 } from 'urql';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import { useDispatch, useSelector } from 'react-redux';
-import { MeasurementEntry, MeasurementResponse } from './components';
-import gql from 'graphql-tag';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
+import { 
+  LinearProgress,
+  FormControl, 
+  InputLabel, 
+  Select, 
+  MenuItem, 
+  IconButton,
+  InputAdornment,
+  Grid, 
+  GridList,
+  GridListTile,
+  Chip
+} from '@material-ui/core';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import CloseIcon from '@material-ui/icons/Close';
 import { actions } from './reducer'
+import { IState } from '../../store';
 import { Measurement } from '../../types';
 import { subscribe } from 'graphql';
 
-const subscriptionClient = new SubscriptionClient(
-  'ws://react.eogresources.com/graphql',
-  {}
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      flexGrow: 1,
+    },
+    gridList: {
+      height: "100%",
+      width: "100%",
+    },
+    grid: {
+      padding: "30px"
+    },
+    formControl: {
+      width: "100%",
+    },
+    chips: {
+      display: 'flex',
+      flexWrap: 'wrap',
+    },
+    chip: {
+      margin: 2,
+    },
+    select: {
+      width: "100%"
+    },
+    iconButton: {
+      "&:hover": {
+        backgroundColor: "transparent"
+      }
+    }
+  }),
 );
 
 const query=gql`
@@ -43,11 +83,11 @@ subscription newMeasurement {
 }
 `;
 
-const getMetrics = (state: IState) => {
-  return {
-    ...state.metrics2
-  };
-};
+const subscriptionClient = new SubscriptionClient(
+  'ws://react.eogresources.com/graphql',
+  {}
+);
+
 const client = createClient({
   url: 'https://react.eogresources.com/graphql',
   exchanges: [
@@ -64,6 +104,12 @@ const client = createClient({
   ],
 });
 
+const getMetrics = (state: IState) => {
+  return {
+    ...state.metrics2
+  };
+};
+
 export default () => {
   return (
     <Provider value={client}>
@@ -73,6 +119,7 @@ export default () => {
 }
 
 const MetricsSubscription = () => {
+  const classes = useStyles();
   const dispatch = useDispatch();
 
   const { metrics, measurements, selectedMetrics } = useSelector(getMetrics)

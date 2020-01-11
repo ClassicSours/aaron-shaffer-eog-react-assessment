@@ -4,6 +4,7 @@ import { actions } from './reducer'
 import { Provider, createClient, useQuery } from 'urql';
 import { IState } from '../../store';
 import { 
+  LinearProgress,
   FormControl, 
   InputLabel, 
   Select, 
@@ -15,7 +16,6 @@ import {
   GridListTile,
   Chip
 } from '@material-ui/core';
-import LinearProgress from '@material-ui/core/LinearProgress';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
 import Measurements from './Measurements';
