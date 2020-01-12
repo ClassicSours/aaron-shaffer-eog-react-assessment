@@ -7,6 +7,7 @@ import { actions } from './reducer';
 import { IState } from '../../store';
 import { getMultipleMeasurements } from '../../resources/queries';
 import { LinearProgress } from '@material-ui/core';
+import { LineChart, Line } from 'recharts';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({}));
 
@@ -31,14 +32,20 @@ const getState = (state: IState) => {
 const Measurements = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { measurementQuery } = useSelector(getState);
+  const { measurementQuery, multipleMeasurements } = useSelector(getState);
 
-  const [result] = useQuery({
+  const [result, executeQuery] = useQuery({
     query: getMultipleMeasurements,
     variables: {
       input: measurementQuery,
     },
+    requestPolicy: 'cache-only',
   });
+
+  useEffect(() => {
+    const requestPolicy = measurementQuery.length === 0 ? 'cache-only' : 'cache-and-network';
+    executeQuery({ requestPolicy });
+  }, [executeQuery, measurementQuery]);
 
   const { error, data, fetching } = result;
   useEffect(() => {
@@ -53,5 +60,5 @@ const Measurements = () => {
   }, [dispatch, data, error]);
 
   if (fetching) return <LinearProgress />;
-  return <div>works</div>;
+  return <LineChart></LineChart>;
 };

@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from 'redux-starter-kit';
 import { ApiErrorAction, Measurement, MultipleMeasurements, MeasurementQuery, Heartbeat } from '../../resources/types';
-
 interface MeasurementsReducer {
   heartBeat: number;
   recentMeasurements: Map<string, Measurement>;
@@ -29,6 +28,8 @@ const slice = createSlice({
     },
     multipleMeasurementsDataReceived: (state, action: PayloadAction<MultipleMeasurements>) => {
       console.log(action);
+      const { payload } = action;
+      state.multipleMeasurements = payload;
     },
     removeSelectedMetric: (state, action: PayloadAction<string>) => state,
     measurementsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state,
@@ -42,7 +43,6 @@ const slice = createSlice({
           after: state.heartBeat,
         };
       });
-      console.log(state.measurementQuery);
     },
     'metrics/setHeartbeat': (state, action: PayloadAction<Heartbeat>) => {
       const { heartBeat } = action.payload;
