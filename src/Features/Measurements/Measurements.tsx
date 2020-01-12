@@ -10,6 +10,11 @@ import { getMultipleMeasurements } from '../../resources/queries';
 import { LinearProgress } from '@material-ui/core';
 import classes from '*.module.css';
 
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+
+  }),
+);
 
 const client = createClient({
   url: 'https://react.eogresources.com/graphql',
@@ -24,14 +29,34 @@ export default () => {
 };
 
 const getState = (state: IState) => {
-  const {selectedMetrics} = state.metrics
   return {
-    selectedMetrics,
     ...state.measurements,
   };
 };
 
 const Measurements = () => {
+  const classes = useStyles();
+  const dispatch = useDispatch();
+  const {measurementQuery} = useSelector(getState)
+  const [result, executeQuery] = useQuery({
+    query: getMultipleMeasurements,
+    variables: { 
+      measurementQuery 
+    },
+    requestPolicy:'cache-only'
+  });
+
+  const { error, data } = result;
+  useEffect(() => {
+    if (error) {
+      dispatch(actions.measurementsApiErrorReceived({ error: error.message }));
+      return;
+    }
+    if (!data) return;
+    const { newMeasurement } = data;
+    dispatch(actions.multipleMeasurementsDataReceived(newMeasurement));
+  }, [dispatch, data, error]);
+
   return (
     <div>
       works

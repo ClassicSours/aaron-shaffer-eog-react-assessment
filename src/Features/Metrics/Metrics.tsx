@@ -13,7 +13,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import CloseIcon from '@material-ui/icons/Close';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { Provider, createClient, useQuery } from 'urql';
-import { getMetrics } from '../../resources/queries';
+import { getMetrics, heartBeat } from '../../resources/queries';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -84,6 +84,7 @@ const Metrics = () => {
   };
 
   const [result] = useQuery({ query: getMetrics });
+  const [queryMultiple] = useQuery({query: heartBeat})
   const { data, error, fetching } = result;
   useEffect(() => {
     if (error) {

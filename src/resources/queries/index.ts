@@ -1,4 +1,4 @@
-export * from './getHeartbeat';
+export * from './heartBeat';
 export * from './getLastKnownMeasurement';
 export * from './getMeasurements';
 export * from './getMetrics';

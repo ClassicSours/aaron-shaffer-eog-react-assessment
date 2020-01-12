@@ -1,17 +1,17 @@
 import { createSlice, PayloadAction } from 'redux-starter-kit';
 import { ApiErrorAction, Measurement, MultipleMeasurements, MeasurementQuery} from '../../resources/types';
-import Measurements from './Measurements';
+import Measurements from './Measurement';
 
 interface MeasurementsReducer {
-  measurement: Measurement,
-  measurements: Map<string,Measurement>,
+  recentMeasurements: Map<string,Measurement>,
+  measurements: Map<string,Measurement[]>,
   measurementQuery: Array<MeasurementQuery>,
   multipleMeasurements: MultipleMeasurements
 }
 
 const initialState:MeasurementsReducer = {
-  measurement: Object(),
-  measurements: new Map<string,Measurement>(),
+  recentMeasurements: new Map<string,Measurement>(),
+  measurements: new Map<string,Measurement[]>(),
   measurementQuery: new Array<MeasurementQuery>(),
   multipleMeasurements: Object()
 };
@@ -23,8 +23,10 @@ const slice = createSlice({
     measurementDataRecieved: (state, action: PayloadAction<Measurement>) => {
       const { payload } = action;
       const {metric} = payload
-      state.measurement = payload;
-      state.measurements.set(metric,payload)
+      state.recentMeasurements.set(metric,payload)
+    },
+    multipleMeasurementsDataReceived:(state, action: any) => {
+      console.log(action)
     },
     removeSelectedMetric: (state, action: PayloadAction<string>) => state,
     measurementsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state,

@@ -15,9 +15,6 @@ import { LinearProgress } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    root: {
-      flexGrow: 1,
-    },
     gridList: {
       height: '100%',
       width: '100%',
@@ -61,8 +58,9 @@ const getState = (state: IState) => {
 const Measurement = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { selectedMetrics, measurement, measurements } = useSelector(getState);
+  const { selectedMetrics, recentMeasurements } = useSelector(getState);
   const [result] = useSubscription({ query: newMeasurement });
+  
   const { error, data } = result;
   useEffect(() => {
     if (error) {
@@ -74,7 +72,7 @@ const Measurement = () => {
     dispatch(actions.measurementDataRecieved(newMeasurement));
   }, [dispatch, data, error]);
 
-  if (!measurements) return <LinearProgress />;
+  if (!recentMeasurements) return <LinearProgress />;
 
   return (
     <Grid item xs={12}>
@@ -83,7 +81,7 @@ const Measurement = () => {
           selectedMetrics.map(metric => {
             return (
             <GridListTile key={metric} cols={1} id={metric}>
-              <MeasurementCard metric={metric} measurements={measurements} actions={actions}/>
+              <MeasurementCard metric={metric} measurements={recentMeasurements} actions={actions}/>
             </GridListTile>
             )
           })
