@@ -11,9 +11,8 @@ const useStyles = makeStyles((theme: Theme) => createStyles({}));
 interface ComponentProps {
   data: any;
 }
-export const MeasurementsChart: FC<ComponentProps> = (props: ComponentProps) => {
+export const ChartMeasurements: FC<ComponentProps> = (props: ComponentProps) => {
   const { data } = props;
-  console.log(data);
   return null;
   // <LineChart width={1000} height={500} data={data}>
   //   <XAxis height={40} dataKey="" tick={{ fontSize: 10 }}>

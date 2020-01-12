@@ -14,7 +14,6 @@ import CloseIcon from '@material-ui/icons/Close';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { Provider, createClient, useQuery } from 'urql';
 import { heartBeat, getMultipleMeasurements } from '../../resources/queries';
-import { MeasurementsChart } from '../../components/MeasurementsChart';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({}));
 
@@ -71,5 +70,5 @@ const MultipleMeasurements = () => {
     setState(multipleMeasurements.data);
   }, [dispatch, multipleMeasurements.error, multipleMeasurements.data]);
 
-  return <MeasurementsChart data={data} />;
+  return null;
 };

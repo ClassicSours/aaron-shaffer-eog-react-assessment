@@ -12,9 +12,23 @@ import Chip from '@material-ui/core/Chip';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import CloseIcon from '@material-ui/icons/Close';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { Provider, createClient, useQuery } from 'urql';
 import { getMetrics, heartBeat, getMultipleMeasurements } from '../../resources/queries';
-
+import {
+  Provider,
+  useSubscription,
+  dedupExchange,
+  cacheExchange,
+  fetchExchange,
+  subscriptionExchange,
+  createClient,
+  useQuery,
+} from 'urql';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
+import Grid from '@material-ui/core/Grid';
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
+import { newMeasurement } from '../../resources/queries';
+import { MeasurementCard } from '../../components/MeasurementCard';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -48,8 +62,21 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
+const subscriptionClient = new SubscriptionClient('ws://react.eogresources.com/graphql', {});
+
 const client = createClient({
   url: 'https://react.eogresources.com/graphql',
+  exchanges: [
+    dedupExchange,
+    // debugExchange,
+    cacheExchange,
+    fetchExchange,
+    subscriptionExchange({
+      forwardSubscription: operation => {
+        return subscriptionClient.request(operation);
+      },
+    }),
+  ],
 });
 
 export default () => {
@@ -69,7 +96,7 @@ const getState = (state: IState) => {
 const Metrics = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { metrics, measurementQuery, selectedMetrics } = useSelector(getState);
+  const { metrics, selectedMetrics, measurementQuery, measurements, recentMeasurements } = useSelector(getState);
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     dispatch(actions.setSelectedMetrics(event.target.value as string[]));
@@ -83,8 +110,10 @@ const Metrics = () => {
     dispatch(actions.removeSelectedMetric(metricName));
   };
 
-  const [result] = useQuery({ query: getMetrics });
-  const { data, error, fetching } = result;
+  // first get metrics for the drop down.
+  const [METRICS_RESULT] = useQuery({ query: getMetrics });
+  let { fetching } = METRICS_RESULT;
+  const { data, error } = METRICS_RESULT;
   useEffect(() => {
     if (error) {
       dispatch(actions.metricsApiErrorReceived({ error: error.message }));
@@ -93,8 +122,8 @@ const Metrics = () => {
     if (!data) return;
     dispatch(actions.setMetrics(data));
   }, [dispatch, error, data]);
-
   if (fetching) return <LinearProgress />;
+
   return (
     <FormControl className={classes.formControl} variant="outlined">
       <InputLabel>Metrics</InputLabel>
