@@ -27,7 +27,7 @@ const slice = createSlice({
       const { metric } = payload;
       state.recentMeasurements.set(metric, payload);
     },
-    multipleMeasurementsDataReceived: (state, action: any) => {
+    multipleMeasurementsDataReceived: (state, action: PayloadAction<MultipleMeasurements>) => {
       console.log(action);
     },
     removeSelectedMetric: (state, action: PayloadAction<string>) => state,

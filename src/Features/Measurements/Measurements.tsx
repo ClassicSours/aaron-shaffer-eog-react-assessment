@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Provider, useQuery, createClient } from 'urql';
 import Grid from '@material-ui/core/Grid';
@@ -33,7 +33,7 @@ const Measurements = () => {
   const dispatch = useDispatch();
   const { measurementQuery } = useSelector(getState);
 
-  const [result, executeQuery] = useQuery({
+  const [result] = useQuery({
     query: getMultipleMeasurements,
     variables: {
       input: measurementQuery,
