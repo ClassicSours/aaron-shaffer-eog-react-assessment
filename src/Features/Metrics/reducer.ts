@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from 'redux-starter-kit';
-import { ApiErrorAction, Metrics, MeasurementQuery } from '../../resources/types';
+import { ApiErrorAction, Metrics, Heartbeat } from '../../resources/types';
 
 const initialState = {
   // array of metric names
@@ -23,14 +23,15 @@ const slice = createSlice({
       let { payload } = action;
       state.selectedMetrics = state.selectedMetrics.filter(metric => metric !== payload);
     },
+    setHeartbeat: (state, actions: PayloadAction<Heartbeat>) => state,
     metricsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state,
   },
   extraReducers: {
-    "measurements/removeSelectedMetric": (state, action: PayloadAction<string>) => {
+    'measurements/removeSelectedMetric': (state, action: PayloadAction<string>) => {
       let { payload } = action;
       state.selectedMetrics = state.selectedMetrics.filter(metric => metric !== payload);
     },
-  }
+  },
 });
 
 export const reducer = slice.reducer;

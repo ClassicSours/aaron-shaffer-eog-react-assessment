@@ -3,4 +3,4 @@ export type Measurement = {
   at: number;
   value: number;
   unit: string;
-}
+};

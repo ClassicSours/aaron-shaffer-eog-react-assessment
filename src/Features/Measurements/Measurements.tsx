@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Provider, useQuery, createClient } from 'urql';
 import Grid from '@material-ui/core/Grid';
@@ -10,15 +10,11 @@ import { getMultipleMeasurements } from '../../resources/queries';
 import { LinearProgress } from '@material-ui/core';
 import classes from '*.module.css';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-
-  }),
-);
+const useStyles = makeStyles((theme: Theme) => createStyles({}));
 
 const client = createClient({
   url: 'https://react.eogresources.com/graphql',
-})
+});
 
 export default () => {
   return (
@@ -37,13 +33,13 @@ const getState = (state: IState) => {
 const Measurements = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const {measurementQuery} = useSelector(getState)
+  const { measurementQuery } = useSelector(getState);
   const [result, executeQuery] = useQuery({
     query: getMultipleMeasurements,
-    variables: { 
-      measurementQuery 
+    variables: {
+      measurementQuery,
     },
-    requestPolicy:'cache-only'
+    requestPolicy: 'cache-only',
   });
 
   const { error, data } = result;
@@ -53,13 +49,13 @@ const Measurements = () => {
       return;
     }
     if (!data) return;
+    executeQuery(() => {
+      const requestPolicy = { requestPolicy: measurementQuery.length !== 0 ? 'network-only' : 'cache-only' };
+      return requestPolicy;
+    });
     const { newMeasurement } = data;
     dispatch(actions.multipleMeasurementsDataReceived(newMeasurement));
-  }, [dispatch, data, error]);
+  }, [dispatch, data, error, executeQuery]);
 
-  return (
-    <div>
-      works
-    </div>
-  )
-}
+  return <div>works</div>;
+};

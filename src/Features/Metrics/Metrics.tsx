@@ -84,7 +84,8 @@ const Metrics = () => {
   };
 
   const [result] = useQuery({ query: getMetrics });
-  const [queryMultiple] = useQuery({query: heartBeat})
+  const [heartbeat] = useQuery({ query: heartBeat });
+
   const { data, error, fetching } = result;
   useEffect(() => {
     if (error) {
@@ -94,6 +95,15 @@ const Metrics = () => {
     if (!data) return;
     dispatch(actions.setMetrics(data));
   }, [dispatch, error, data]);
+
+  useEffect(() => {
+    if (heartbeat.error) {
+      dispatch(actions.metricsApiErrorReceived({ error: heartbeat.error.message }));
+      return;
+    }
+    if (!heartbeat.data) return;
+    dispatch(actions.setHeartbeat(heartbeat.data));
+  }, [dispatch, heartbeat.error, heartbeat.data]);
 
   if (fetching) return <LinearProgress />;
   return (
@@ -136,12 +146,11 @@ const Metrics = () => {
           getContentAnchorEl: null,
         }}
       >
-      {
-        selectedMetrics.length === metrics.length ? (
+        {selectedMetrics.length === metrics.length ? (
           <MenuItem disabled key={''} value={''}>
             {'No Options'}
           </MenuItem>
-          ) : (
+        ) : (
           metrics
             .filter(metric => !selectedMetrics.includes(metric))
             .map(metric => (
@@ -149,8 +158,7 @@ const Metrics = () => {
                 {metric}
               </MenuItem>
             ))
-          )
-        }
+        )}
       </Select>
     </FormControl>
   );

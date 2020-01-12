@@ -1,7 +1,7 @@
-import gql from 'graphql-tag'
+import gql from 'graphql-tag';
 export const getMultipleMeasurements = gql`
-{
-  getMultipleMeasurements(measurementQuery: $measurementQuery) {
+  {
+    getMultipleMeasurements(measurementQuery: $measurementQuery) {
       metric
       measurements {
         at

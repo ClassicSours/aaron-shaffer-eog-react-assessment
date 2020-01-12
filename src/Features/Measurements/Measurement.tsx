@@ -1,6 +1,14 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Provider, useSubscription, dedupExchange, cacheExchange, fetchExchange, subscriptionExchange, createClient } from 'urql';
+import {
+  Provider,
+  useSubscription,
+  dedupExchange,
+  cacheExchange,
+  fetchExchange,
+  subscriptionExchange,
+  createClient,
+} from 'urql';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import Grid from '@material-ui/core/Grid';
 import GridList from '@material-ui/core/GridList';
@@ -48,7 +56,7 @@ const client = createClient({
 });
 
 const getState = (state: IState) => {
-  const {selectedMetrics} = state.metrics
+  const { selectedMetrics } = state.metrics;
   return {
     selectedMetrics,
     ...state.measurements,
@@ -60,7 +68,7 @@ const Measurement = () => {
   const dispatch = useDispatch();
   const { selectedMetrics, recentMeasurements } = useSelector(getState);
   const [result] = useSubscription({ query: newMeasurement });
-  
+
   const { error, data } = result;
   useEffect(() => {
     if (error) {
@@ -77,15 +85,13 @@ const Measurement = () => {
   return (
     <Grid item xs={12}>
       <GridList cellHeight={'auto'} className={classes.gridList} cols={3} spacing={15}>
-        {
-          selectedMetrics.map(metric => {
-            return (
+        {selectedMetrics.map(metric => {
+          return (
             <GridListTile key={metric} cols={1} id={metric}>
-              <MeasurementCard metric={metric} measurements={recentMeasurements} actions={actions}/>
+              <MeasurementCard metric={metric} measurements={recentMeasurements} actions={actions} />
             </GridListTile>
-            )
-          })
-        }
+          );
+        })}
       </GridList>
     </Grid>
   );
