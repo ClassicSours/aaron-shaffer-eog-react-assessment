@@ -5,7 +5,6 @@ const initialState = {
   // array of metric names
   metrics: Array<string>(),
   selectedMetrics: Array<string>(),
-  measurementQuery: Array<MeasurementQuery>()
 };
 
 const slice = createSlice({

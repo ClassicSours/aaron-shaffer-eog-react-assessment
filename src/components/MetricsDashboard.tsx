@@ -3,7 +3,9 @@ import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { IState } from '../store';
 
+import Measurement from '../Features/Measurements/Measurement';
 import Measurements from '../Features/Measurements/Measurements';
+
 import Metrics from '../Features/Metrics/Metrics';
 import { useSelector } from 'react-redux';
 
@@ -46,12 +48,14 @@ export default () => {
     <div className={classes.root}>
       <Grid container direction="row" justify="flex-end" alignItems="flex-start" alignContent="flex-start" className={classes.grid}>
         <Grid item xs={8} className={classes.grid}>
-          <Measurements />
+          <Measurement />
         </Grid>
         <Grid item xs={4} className={classes.grid}>
           <Metrics />
         </Grid>
-        {/* <HistoricalMetrics /> */}
+        <Grid item xs={12} className={classes.grid}>
+          <Measurements />
+        </Grid>
       </Grid>
     </div>
   )

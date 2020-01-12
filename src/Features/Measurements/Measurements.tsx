@@ -1,29 +1,19 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Provider, useSubscription, dedupExchange, cacheExchange, fetchExchange, subscriptionExchange, createClient } from 'urql';
-import { SubscriptionClient } from 'subscriptions-transport-ws';
+import { Provider, useQuery, createClient } from 'urql';
 import Grid from '@material-ui/core/Grid';
-import GridList from '@material-ui/core/GridList';
-import GridListTile from '@material-ui/core/GridListTile';
 
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { actions } from './reducer';
 import { IState } from '../../store';
-import { newMeasurement } from '../../resources/queries';
-import { MeasurementCard } from '../../components/MeasurementCard';
+import { getMultipleMeasurements } from '../../resources/queries';
 import { LinearProgress } from '@material-ui/core';
+import classes from '*.module.css';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      flexGrow: 1,
-    },
-    gridList: {
-      height: '100%',
-      width: '100%',
-    },
-  }),
-);
+
+const client = createClient({
+  url: 'https://react.eogresources.com/graphql',
+})
 
 export default () => {
   return (
@@ -32,23 +22,6 @@ export default () => {
     </Provider>
   );
 };
-
-const subscriptionClient = new SubscriptionClient('ws://react.eogresources.com/graphql', {});
-
-const client = createClient({
-  url: 'https://react.eogresources.com/graphql',
-  exchanges: [
-    dedupExchange,
-    // debugExchange,
-    cacheExchange,
-    fetchExchange,
-    subscriptionExchange({
-      forwardSubscription: operation => {
-        return subscriptionClient.request(operation);
-      },
-    }),
-  ],
-});
 
 const getState = (state: IState) => {
   const {selectedMetrics} = state.metrics
@@ -59,37 +32,9 @@ const getState = (state: IState) => {
 };
 
 const Measurements = () => {
-  const classes = useStyles();
-  const dispatch = useDispatch();
-  const { selectedMetrics, measurement, measurements, selectedMeasurements, multipleMeasurements } = useSelector(getState);
-
-  const [result] = useSubscription({ query: newMeasurement });
-  const { error, data } = result;
-  useEffect(() => {
-    if (error) {
-      dispatch(actions.measurementsApiErrorReceived({ error: error.message }));
-      return;
-    }
-    if (!data) return;
-    const { newMeasurement } = data;
-    dispatch(actions.measurementDataRecieved(newMeasurement));
-  }, [dispatch, data, error]);
-
-  if (!measurements) return <LinearProgress />;
-
   return (
-    <Grid item xs={12}>
-      <GridList cellHeight={'auto'} className={classes.gridList} cols={3} spacing={15}>
-        {
-          selectedMetrics.map(metric => {
-            return (
-            <GridListTile key={metric} cols={1} id={metric}>
-              <MeasurementCard metric={metric} measurements={measurements} actions={actions}/>
-            </GridListTile>
-            )
-          })
-        }
-      </GridList>
-    </Grid>
-  );
-};
+    <div>
+      works
+    </div>
+  )
+}
