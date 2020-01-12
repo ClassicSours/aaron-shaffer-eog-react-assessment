@@ -1539,7 +1539,7 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.3.tgz#bdfd69d61e464dcc81b25159c270d75a73c1a636"
   integrity sha512-Il2DtDVRGDcqjDtE+rF8iqg1CArehSK84HZJCT7AMITlyXRBpuPhqGLDQMowraqqu1coEaimg4ZOqggt6L6L+A==
 
-"@types/plotly.js@*":
+"@types/plotly.js@*", "@types/plotly.js@^1.44.24":
   version "1.44.24"
   resolved "https://registry.yarnpkg.com/@types/plotly.js/-/plotly.js-1.44.24.tgz#a512723547bec8bc30d28392c652a182c442c5e7"
   integrity sha512-iCGjqojhcqww7CphZPqs96JHC0qsx8AFe9R6KUw87mK/TmaogeUfv21X7BPvZcg2bT/eDxgI0BteX4Ow1gnXsA==
@@ -9697,6 +9697,11 @@ planar-graph-to-polyline@^1.0.0:
     two-product "^1.0.0"
     uniq "^1.0.0"
 
+plotly.js-basic-dist@^1.52.0:
+  version "1.52.0"
+  resolved "https://registry.yarnpkg.com/plotly.js-basic-dist/-/plotly.js-basic-dist-1.52.0.tgz#2eba81f119d43de87d6d76dea773911848fb7adc"
+  integrity sha512-S1G9rENHNpu0iexEOiEGOk2FD8k/AGAeh39YZ/2DgIiZDfpPLCDTe0wLXz1XuFnhHeMequQ8NXbJIK63rpcqvg==
+
 plotly.js@^1.52.0:
   version "1.52.0"
   resolved "https://registry.yarnpkg.com/plotly.js/-/plotly.js-1.52.0.tgz#eb398d9ad07c6c8704fa419b7ccf065568479b4a"
@@ -11194,6 +11199,14 @@ redux@^4.0.0, redux@^4.0.4:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/redux/-/redux-4.0.4.tgz#4ee1aeb164b63d6a1bcc57ae4aa0b6e6fa7a3796"
   integrity sha512-vKv4WdiJxOWKxK0yRoaK3Y4pxxB0ilzVx6dszU2W8wLxlb2yikRph4iV/ymtdJ6ZxpBLFbyrxklnT5yBbQSl3Q==
+  dependencies:
+    loose-envify "^1.4.0"
+    symbol-observable "^1.2.0"
+
+redux@^4.0.5:
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/redux/-/redux-4.0.5.tgz#4db5de5816e17891de8a80c424232d06f051d93f"
+  integrity sha512-VSz1uMAH24DM6MF72vcojpYPtrTUu3ByVWfPL1nPfVRb5mZVTve5GnNCUV53QM/BZ66xfWrm0CTWoM+Xlz8V1w==
   dependencies:
     loose-envify "^1.4.0"
     symbol-observable "^1.2.0"
