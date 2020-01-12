@@ -2,10 +2,9 @@ import React from 'react';
 import Grid from '@material-ui/core/Grid';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 
-import Measurement from '../Features/Measurements/Measurement';
 import Measurements from '../Features/Measurements/Measurements';
-
 import Metrics from '../Features/Metrics/Metrics';
+import MultipleMeasurements from '../Features/MultipleMeasurements/MultipleMeasurements';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -39,18 +38,18 @@ export default () => {
         container
         direction="row"
         justify="flex-end"
-        alignItems="flex-start"
+        alignItems="center"
         alignContent="flex-start"
         className={classes.grid}
       >
         <Grid item xs={8} className={classes.grid}>
-          <Measurement />
+          <Measurements />
         </Grid>
         <Grid item xs={4} className={classes.grid}>
           <Metrics />
         </Grid>
-        <Grid container className={classes.grid} alignContent={'center'}>
-          <Measurements />
+        <Grid container className={classes.grid}>
+          <MultipleMeasurements />
         </Grid>
       </Grid>
     </div>

@@ -1,17 +1,34 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Provider, useQuery, createClient } from 'urql';
+import {
+  Provider,
+  useSubscription,
+  dedupExchange,
+  cacheExchange,
+  fetchExchange,
+  subscriptionExchange,
+  createClient,
+} from 'urql';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
+import Grid from '@material-ui/core/Grid';
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
+
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { actions } from './reducer';
 import { IState } from '../../store';
-import { getMultipleMeasurements } from '../../resources/queries';
-import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Label } from 'recharts';
-import { isSelectionNode } from 'graphql';
-const useStyles = makeStyles((theme: Theme) => createStyles({}));
+import { newMeasurement } from '../../resources/queries';
+import { MeasurementCard } from '../../components/MeasurementCard';
+import { LinearProgress } from '@material-ui/core';
 
-const client = createClient({
-  url: 'https://react.eogresources.com/graphql',
-});
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    gridList: {
+      height: '100%',
+      width: '100%',
+    },
+  }),
+);
 
 export default () => {
   return (
@@ -21,8 +38,27 @@ export default () => {
   );
 };
 
+const subscriptionClient = new SubscriptionClient('ws://react.eogresources.com/graphql', {});
+
+const client = createClient({
+  url: 'https://react.eogresources.com/graphql',
+  exchanges: [
+    dedupExchange,
+    // debugExchange,
+    cacheExchange,
+    fetchExchange,
+    subscriptionExchange({
+      forwardSubscription: operation => {
+        return subscriptionClient.request(operation);
+      },
+    }),
+  ],
+});
+
 const getState = (state: IState) => {
+  const { selectedMetrics } = state.metrics;
   return {
+    selectedMetrics,
     ...state.measurements,
   };
 };
@@ -30,20 +66,8 @@ const getState = (state: IState) => {
 const Measurements = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { measurementQuery, measurements } = useSelector(getState);
-
-  const [result, executeQuery] = useQuery({
-    query: getMultipleMeasurements,
-    variables: {
-      input: measurementQuery,
-    },
-    requestPolicy: 'cache-only',
-  });
-
-  useEffect(() => {
-    const requestPolicy = measurementQuery.length === 0 ? 'cache-only' : 'cache-and-network';
-    executeQuery({ requestPolicy });
-  }, [executeQuery, measurementQuery]);
+  const { selectedMetrics, recentMeasurements } = useSelector(getState);
+  const [result] = useSubscription({ query: newMeasurement });
 
   const { error, data } = result;
   useEffect(() => {
@@ -52,28 +76,23 @@ const Measurements = () => {
       return;
     }
     if (!data) return;
-    dispatch(actions.multipleMeasurementsDataReceived(data));
+    const { newMeasurement } = data;
+    dispatch(actions.measurementDataRecieved(newMeasurement));
   }, [dispatch, data, error]);
-  const [d] = measurements.map(m => {
-    return m.measurements;
-  });
+
+  if (!recentMeasurements) return <LinearProgress />;
+
   return (
-    <LineChart width={1000} height={500} data={d}>
-      <XAxis height={40} dataKey="at" tick={{ fontSize: 10 }}>
-        <Label value="at" position="insideBottom" fontSize={14} fill="#676767" />
-      </XAxis>
-      {measurements.map(c => {
-        console.log(c);
-        return (
-          <YAxis width={80} yAxisId={c.measurements[0].unit} tick={{ fontSize: 10 }}>
-            <Label value={c.measurements[0].unit} angle={-90} position="insideTopLeft" fill="#676767" fontSize={12} />
-          </YAxis>
-        );
-      })}
-      {measurements.map(c => {
-        return <Line yAxisId={c.measurements[0].unit} type="monotone" dataKey="value" stroke="black" />;
-      })}
-      <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-    </LineChart>
+    <Grid item xs={12}>
+      <GridList cellHeight={'auto'} className={classes.gridList} cols={3} spacing={15}>
+        {selectedMetrics.map(metric => {
+          return (
+            <GridListTile key={metric} cols={1} id={metric}>
+              <MeasurementCard metric={metric} measurements={recentMeasurements} actions={actions} />
+            </GridListTile>
+          );
+        })}
+      </GridList>
+    </Grid>
   );
 };

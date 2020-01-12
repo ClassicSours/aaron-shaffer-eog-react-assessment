@@ -1,10 +1,12 @@
 import { createSlice, PayloadAction } from 'redux-starter-kit';
-import { ApiErrorAction, Metrics, Heartbeat } from '../../resources/types';
+import { ApiErrorAction, Metrics, MULTIPLE_MEASUREMENTS, MEASUREMENTS_QUERY, MEASUREMENT } from '../../resources/types';
 
 const initialState = {
   // array of metric names
-  metrics: Array<string>(),
-  selectedMetrics: Array<string>(),
+  metrics: new Array<string>(),
+  measurements: new Array<MEASUREMENT>(),
+  selectedMetrics: new Array<string>(),
+  measurementQuery: new Array<MEASUREMENTS_QUERY>(),
 };
 
 const slice = createSlice({
@@ -23,8 +25,8 @@ const slice = createSlice({
       let { payload } = action;
       state.selectedMetrics = state.selectedMetrics.filter(metric => metric !== payload);
     },
-    setHeartbeat: (state, actions: PayloadAction<Heartbeat>) => state,
     metricsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state,
+    multipleMeasurementsDataReceived: (state, action: PayloadAction<MULTIPLE_MEASUREMENTS>) => state,
   },
   extraReducers: {
     'measurements/removeSelectedMetric': (state, action: PayloadAction<string>) => {

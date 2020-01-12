@@ -13,7 +13,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import CloseIcon from '@material-ui/icons/Close';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { Provider, createClient, useQuery } from 'urql';
-import { getMetrics, heartBeat } from '../../resources/queries';
+import { getMetrics, heartBeat, getMultipleMeasurements } from '../../resources/queries';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -69,7 +69,7 @@ const getState = (state: IState) => {
 const Metrics = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { metrics, selectedMetrics } = useSelector(getState);
+  const { metrics, measurementQuery, selectedMetrics } = useSelector(getState);
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     dispatch(actions.setSelectedMetrics(event.target.value as string[]));
@@ -84,8 +84,6 @@ const Metrics = () => {
   };
 
   const [result] = useQuery({ query: getMetrics });
-  const [heartbeat] = useQuery({ query: heartBeat });
-
   const { data, error, fetching } = result;
   useEffect(() => {
     if (error) {
@@ -95,15 +93,6 @@ const Metrics = () => {
     if (!data) return;
     dispatch(actions.setMetrics(data));
   }, [dispatch, error, data]);
-
-  useEffect(() => {
-    if (heartbeat.error) {
-      dispatch(actions.metricsApiErrorReceived({ error: heartbeat.error.message }));
-      return;
-    }
-    if (!heartbeat.data) return;
-    dispatch(actions.setHeartbeat(heartbeat.data));
-  }, [dispatch, heartbeat.error, heartbeat.data]);
 
   if (fetching) return <LinearProgress />;
   return (

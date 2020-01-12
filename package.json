@@ -12,6 +12,7 @@
     "graphql": "^14.5.8",
     "graphql-tag": "^2.10.1",
     "isomorphic-fetch": "^2.2.1",
+    "plottable": "^3.8.6",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-redux": "^7.1.3",

@@ -1,27 +1,23 @@
 import { createSlice, PayloadAction } from 'redux-starter-kit';
 import {
   ApiErrorAction,
-  Measurement,
-  MultipleMeasurements,
-  Measurements,
-  MeasurementQuery,
-  Heartbeat,
+  MEASUREMENT,
+  MEASUREMENTS,
+  MULTIPLE_MEASUREMENTS,
+  MEASUREMENTS_QUERY,
 } from '../../resources/types';
 
 interface MeasurementsReducer {
-  heartBeat: number;
-  recentMeasurements: Map<string, Measurement>;
-  measurements: Array<Measurements>;
-  measurementQuery: Array<MeasurementQuery>;
+  recentMeasurements: Map<string, MEASUREMENT>;
+  measurements: Array<MEASUREMENTS>;
+  measurementQuery: Array<MEASUREMENTS_QUERY>;
   units: Map<string, string>;
 }
 
-const now = new Date();
 const initialState: MeasurementsReducer = {
-  heartBeat: now.getTime(),
-  recentMeasurements: new Map<string, Measurement>(),
-  measurements: new Array<Measurements>(),
-  measurementQuery: new Array<MeasurementQuery>(),
+  recentMeasurements: new Map<string, MEASUREMENT>(),
+  measurements: new Array<MEASUREMENTS>(),
+  measurementQuery: new Array<MEASUREMENTS_QUERY>(),
   units: new Map<string, string>(),
 };
 
@@ -29,33 +25,13 @@ const slice = createSlice({
   name: 'measurements',
   initialState,
   reducers: {
-    measurementDataRecieved: (state, action: PayloadAction<Measurement>) => {
+    measurementDataRecieved: (state, action: PayloadAction<MEASUREMENT>) => {
       const { payload } = action;
       const { metric } = payload;
       state.recentMeasurements.set(metric, payload);
     },
-    multipleMeasurementsDataReceived: (state, action: PayloadAction<MultipleMeasurements>) => {
-      console.log(action);
-      const { getMultipleMeasurements } = action.payload;
-      state.measurements = getMultipleMeasurements;
-    },
     removeSelectedMetric: (state, action: PayloadAction<string>) => state,
     measurementsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state,
-  },
-  extraReducers: {
-    'metrics/setSelectedMetrics': (state, action: PayloadAction<string[]>) => {
-      const { payload } = action;
-      state.measurementQuery = payload.map<MeasurementQuery>(metric => {
-        return {
-          metricName: metric,
-          after: state.heartBeat,
-        };
-      });
-    },
-    'metrics/setHeartbeat': (state, action: PayloadAction<Heartbeat>) => {
-      const { heartBeat } = action.payload;
-      state.heartBeat = heartBeat - 1500000;
-    },
   },
 });
 

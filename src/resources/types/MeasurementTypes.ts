@@ -1,4 +1,6 @@
-export type Measurement = {
+import Measurements from '../../Features/Measurements/Measurements';
+
+export type MEASUREMENT = {
   metric: string;
   at: number;
   value: number;
@@ -6,18 +8,18 @@ export type Measurement = {
   __typename: string;
 };
 
-export type Measurements = {
+export type MEASUREMENTS = {
   metric: string;
-  measurements: Array<Measurement>;
+  measurements: Array<MEASUREMENT>;
   __typename: string;
 };
 
-export type MultipleMeasurements = {
-  getMultipleMeasurements: Array<Measurements>;
+export type MULTIPLE_MEASUREMENTS = {
+  getMultipleMeasurements: Array<MEASUREMENTS>;
   __typename: string;
 };
 
-export type MeasurementQuery = {
+export type MEASUREMENTS_QUERY = {
   metricName: string;
   after: number;
   before?: number;
