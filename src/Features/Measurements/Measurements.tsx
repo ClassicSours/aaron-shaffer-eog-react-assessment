@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Provider, useQuery, createClient } from 'urql';
 import Grid from '@material-ui/core/Grid';
@@ -36,25 +36,27 @@ const Measurements = () => {
   const [result, executeQuery] = useQuery({
     query: getMultipleMeasurements,
     variables: {
-      measurementQuery,
+      input: measurementQuery,
     },
-    requestPolicy: 'cache-and-network',
   });
 
-  useCallback(() => {
-    executeQuery({ requestPolicy: measurementQuery.length === 0 ? 'cache-only' : 'network-only' });
-  }, [executeQuery, measurementQuery.length]);
+  useEffect(() => {}, [executeQuery, measurementQuery]);
+  // useCallback(() => {
+  //   executeQuery({ requestPolicy: measurementQuery.length === 0 ? 'cache-and-network' : 'cache-only' });
+  // }, [executeQuery, measurementQuery]);
 
-  const { error, data } = result;
+  const { error, data, fetching } = result;
   useEffect(() => {
     if (error) {
       dispatch(actions.measurementsApiErrorReceived({ error: error.message }));
       return;
     }
     if (!data) return;
-    const { newMeasurement } = data;
-    dispatch(actions.multipleMeasurementsDataReceived(newMeasurement));
+    const { getMultipleMeasurements } = data;
+    console.log(data);
+    dispatch(actions.multipleMeasurementsDataReceived(getMultipleMeasurements));
   }, [dispatch, data, error]);
 
+  if (fetching) return <LinearProgress />;
   return <div>works</div>;
 };
