@@ -1,20 +1,18 @@
 import { createSlice, PayloadAction } from 'redux-starter-kit';
-import { ApiErrorAction, Measurement, Metrics } from '../../types';
+import { ApiErrorAction, Metrics, MeasurementQuery } from '../../resources/types';
 
 const initialState = {
   // array of metric names
   metrics: Array<string>(),
-  // array of currently selected metrics
   selectedMetrics: Array<string>(),
-  newMeasurements: new Map<string, Measurement>(),
-  measurements: new Map<string, Array<Measurement>>(),
+  measurementQuery: Array<MeasurementQuery>()
 };
 
 const slice = createSlice({
   name: 'metrics',
   initialState,
   reducers: {
-    getMetrics: (state, action: PayloadAction<Metrics>) => {
+    setMetrics: (state, action: PayloadAction<Metrics>) => {
       const { getMetrics } = action.payload;
       state.metrics = getMetrics;
     },
@@ -26,13 +24,14 @@ const slice = createSlice({
       let { payload } = action;
       state.selectedMetrics = state.selectedMetrics.filter(metric => metric !== payload);
     },
-    measurementDataRecieved: (state, action: PayloadAction<Measurement>) => {
-      const { payload } = action;
-      const { metric } = payload;
-      state.newMeasurements.set(metric, payload);
-    },
     metricsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state,
   },
+  extraReducers: {
+    "measurements/removeSelectedMetric": (state, action: PayloadAction<string>) => {
+      let { payload } = action;
+      state.selectedMetrics = state.selectedMetrics.filter(metric => metric !== payload);
+    },
+  }
 });
 
 export const reducer = slice.reducer;

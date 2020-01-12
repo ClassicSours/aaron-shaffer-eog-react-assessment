@@ -1,72 +1,66 @@
-import * as React from 'react';
-import PlotlyChart from 'react-plotlyjs-ts';
-import { makeStyles } from '@material-ui/core';
+import React, { useEffect, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-
-const useStyles = makeStyles({
-
-})
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import {useQuery} from 'urql'
+import { MeasurementQuery } from '../resources/types';
+import {Grid} from '@material-ui/core'
+const useStyles = makeStyles({});
 
 export default (props: ComponentProps) => {
+  const {xs, query, measurementQuery, actions} = props
   return (
-    <PlotMetrics 
-      {...props}
-    />
-  )
-}
+    <Grid item xs={xs}>
+      <PlotMetrics 
+        query={query}
+        measurementQuery={measurementQuery}
+        actions={actions}
+      />
+    </Grid>
+  );
+};
 
 interface ComponentProps {
-
+  xs: any,
+  query: string,
+  measurementQuery: MeasurementQuery[],
+  actions: any
 }
 
-const PlotMetrics = (props: ComponentProps) => {
+interface MetricsProps{
+  query: string,
+  measurementQuery: MeasurementQuery[],
+  actions: any
+}
+
+const PlotMetrics = (props: MetricsProps) => {
   const classes = useStyles();
+  const dispatch = useDispatch();
+  const {query, measurementQuery, actions} = props
 
-  const handleClick = (evt: any) => {
-    console.log(evt)
-    console.log(typeof evt)
-  }
-  const handleHover = (evt: any) => {
-    console.log(evt)
-    console.log(typeof evt)
-  }
-
-  const data = [
-    {
-        marker: {
-            color: 'rgb(16, 32, 77)'
-        },
-        type: 'scatter',
-        x: [1, 2, 3],
-        y: [6, 2, 3]
+  const [result] = useQuery({
+    query: query,
+    variables: {
+      measurementQuery,
     },
-    {
-        name: 'bar chart example',
-        type: 'bar',
-        x: [1, 2, 3],
-        y: [6, 2, 3],
-    }
-  ];
-  const layout = {
-      annotations: [
-          {
-              text: 'simple annotation',
-              x: 0,
-              xref: 'paper',
-              y: 0,
-              yref: 'paper'
-          }
-      ],
-      title: 'simple example',
-      xaxis: {
-          title: 'time'
-      },
-  };
-  return (
-    <PlotlyChart data={data}
-      layout={layout}
-      onClick={handleClick}
-      onHover={handleHover}
-    />
-  )
-}
+  });
+
+  // const memoizedSetMultipleMeasurements = useCallback(
+  //   (getMultipleMeasurements) => {
+  //     // setData
+  //   },[]
+  // )
+
+  // const {fetching, data, error } = result;
+  // useEffect(() => {
+  //   if(error) {
+  //     dispatch(actions.metricsApiErrorReceived({error:error.message}));
+  //     return;
+  //   }
+  //   if(!data) return;
+  //   const {getMultipleMeasurements} = data;
+  //   memoizedSetMultipleMeasurements(getMultipleMeasurements)
+  //   dispatch(actions.multipleMeasurementsDataRecieved(getMultipleMeasurements));
+  // })
+
+  return <div>{'plot metrics works'}</div>;
+};
