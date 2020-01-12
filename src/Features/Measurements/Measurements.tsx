@@ -40,11 +40,6 @@ const Measurements = () => {
     },
   });
 
-  useEffect(() => {}, [executeQuery, measurementQuery]);
-  // useCallback(() => {
-  //   executeQuery({ requestPolicy: measurementQuery.length === 0 ? 'cache-and-network' : 'cache-only' });
-  // }, [executeQuery, measurementQuery]);
-
   const { error, data, fetching } = result;
   useEffect(() => {
     if (error) {
