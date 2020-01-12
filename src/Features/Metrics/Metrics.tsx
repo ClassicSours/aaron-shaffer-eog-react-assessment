@@ -31,8 +31,9 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
 import { actions } from './reducer'
 import { IState } from '../../store';
-import CurrentMetricData from './components/CurrentMetricData'
+import CurrentMetricData from '../../components/CurrentMetricData'
 import Plotly from '../../components/Plotly'
+import PlotMetrics from '../../components/PlotMetrics'
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -270,6 +271,10 @@ const Metrics = () => {
         </Grid>
         <Grid item xs={12}>
           <Plotly
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <PlotMetrics
           />
         </Grid>
       </Grid>

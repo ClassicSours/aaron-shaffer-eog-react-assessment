@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { makeStyles, Card, CardHeader} from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close';
-import { Measurement } from '../../../types';
+import { Measurement } from '../types';
 
 const useStyles = makeStyles({
   card: {
