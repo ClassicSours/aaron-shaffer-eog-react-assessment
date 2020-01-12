@@ -49,7 +49,7 @@ export default () => {
         <Grid item xs={4} className={classes.grid}>
           <Metrics />
         </Grid>
-        <Grid item xs={12} className={classes.grid}>
+        <Grid container className={classes.grid} alignContent={'center'}>
           <Measurements />
         </Grid>
       </Grid>

@@ -8,7 +8,10 @@ export const getMultipleMeasurements = gql`
         value
         metric
         unit
+        __typename
       }
+      __typename
     }
+    __typename
   }
 `;

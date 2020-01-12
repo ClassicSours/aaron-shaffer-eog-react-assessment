@@ -1,20 +1,28 @@
 import { createSlice, PayloadAction } from 'redux-starter-kit';
-import { ApiErrorAction, Measurement, MultipleMeasurements, MeasurementQuery, Heartbeat } from '../../resources/types';
+import {
+  ApiErrorAction,
+  Measurement,
+  MultipleMeasurements,
+  Measurements,
+  MeasurementQuery,
+  Heartbeat,
+} from '../../resources/types';
+
 interface MeasurementsReducer {
   heartBeat: number;
   recentMeasurements: Map<string, Measurement>;
-  measurements: Map<string, Measurement[]>;
+  measurements: Array<Measurements>;
   measurementQuery: Array<MeasurementQuery>;
-  multipleMeasurements: MultipleMeasurements;
+  units: Map<string, string>;
 }
 
 const now = new Date();
 const initialState: MeasurementsReducer = {
   heartBeat: now.getTime(),
   recentMeasurements: new Map<string, Measurement>(),
-  measurements: new Map<string, Measurement[]>(),
+  measurements: new Array<Measurements>(),
   measurementQuery: new Array<MeasurementQuery>(),
-  multipleMeasurements: Object(),
+  units: new Map<string, string>(),
 };
 
 const slice = createSlice({
@@ -28,8 +36,8 @@ const slice = createSlice({
     },
     multipleMeasurementsDataReceived: (state, action: PayloadAction<MultipleMeasurements>) => {
       console.log(action);
-      const { payload } = action;
-      state.multipleMeasurements = payload;
+      const { getMultipleMeasurements } = action.payload;
+      state.measurements = getMultipleMeasurements;
     },
     removeSelectedMetric: (state, action: PayloadAction<string>) => state,
     measurementsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state,
@@ -46,7 +54,7 @@ const slice = createSlice({
     },
     'metrics/setHeartbeat': (state, action: PayloadAction<Heartbeat>) => {
       const { heartBeat } = action.payload;
-      state.heartBeat = heartBeat;
+      state.heartBeat = heartBeat - 1500000;
     },
   },
 });
