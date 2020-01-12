@@ -1,14 +1,12 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Provider, useQuery, createClient } from 'urql';
 import Grid from '@material-ui/core/Grid';
-
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { actions } from './reducer';
 import { IState } from '../../store';
 import { getMultipleMeasurements } from '../../resources/queries';
 import { LinearProgress } from '@material-ui/core';
-import classes from '*.module.css';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({}));
 
@@ -34,13 +32,18 @@ const Measurements = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const { measurementQuery } = useSelector(getState);
+
   const [result, executeQuery] = useQuery({
     query: getMultipleMeasurements,
     variables: {
       measurementQuery,
     },
-    requestPolicy: 'cache-only',
+    requestPolicy: 'cache-and-network',
   });
+
+  useCallback(() => {
+    executeQuery({ requestPolicy: measurementQuery.length === 0 ? 'cache-only' : 'network-only' });
+  }, [executeQuery, measurementQuery.length]);
 
   const { error, data } = result;
   useEffect(() => {
@@ -49,13 +52,9 @@ const Measurements = () => {
       return;
     }
     if (!data) return;
-    executeQuery(() => {
-      const requestPolicy = { requestPolicy: measurementQuery.length !== 0 ? 'network-only' : 'cache-only' };
-      return requestPolicy;
-    });
     const { newMeasurement } = data;
     dispatch(actions.multipleMeasurementsDataReceived(newMeasurement));
-  }, [dispatch, data, error, executeQuery]);
+  }, [dispatch, data, error]);
 
   return <div>works</div>;
 };

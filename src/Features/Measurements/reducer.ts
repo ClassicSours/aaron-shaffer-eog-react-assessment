@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from 'redux-starter-kit';
 import { ApiErrorAction, Measurement, MultipleMeasurements, MeasurementQuery, Heartbeat } from '../../resources/types';
 
 interface MeasurementsReducer {
-  heartbeat: number;
+  heartBeat: number;
   recentMeasurements: Map<string, Measurement>;
   measurements: Map<string, Measurement[]>;
   measurementQuery: Array<MeasurementQuery>;
@@ -11,7 +11,7 @@ interface MeasurementsReducer {
 
 const now = new Date();
 const initialState: MeasurementsReducer = {
-  heartbeat: now.getTime(),
+  heartBeat: now.getTime(),
   recentMeasurements: new Map<string, Measurement>(),
   measurements: new Map<string, Measurement[]>(),
   measurementQuery: new Array<MeasurementQuery>(),
@@ -39,13 +39,14 @@ const slice = createSlice({
       state.measurementQuery = payload.map<MeasurementQuery>(metric => {
         return {
           metricName: metric,
-          after: state.heartbeat,
+          after: state.heartBeat,
         };
       });
+      console.log(state.measurementQuery);
     },
     'metrics/setHeartbeat': (state, action: PayloadAction<Heartbeat>) => {
-      const { heartbeat } = action.payload;
-      state.heartbeat = heartbeat;
+      const { heartBeat } = action.payload;
+      state.heartBeat = heartBeat;
     },
   },
 });
