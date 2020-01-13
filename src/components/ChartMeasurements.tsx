@@ -1,5 +1,5 @@
 import React, { FC, useEffect, Fragment } from 'react';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Label, CartesianGrid } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Label, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { MEASUREMENTS, MEASUREMENT } from '../resources/types';
 import { GridListTile } from '@material-ui/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   }),
 );
-export const ChartMeasurements: FC<ComponentProps> = (props: ComponentProps) => {
+const ChartMeasurements_FC: FC<ComponentProps> = (props: ComponentProps) => {
   const classes = useStyles();
   const { measurements, lazyGetColor } = props;
   let measurements_array = new Array<MEASUREMENTS>();
@@ -53,6 +53,8 @@ export const ChartMeasurements: FC<ComponentProps> = (props: ComponentProps) => 
                   isAnimationActive={false}
                   strokeWidth={2}
                 />
+                <Tooltip />
+                <Legend />
               </LineChart>
             </ResponsiveContainer>
           </GridListTile>
@@ -61,3 +63,4 @@ export const ChartMeasurements: FC<ComponentProps> = (props: ComponentProps) => 
     </Fragment>
   );
 };
+export const ChartMeasurements = React.memo(ChartMeasurements_FC);
