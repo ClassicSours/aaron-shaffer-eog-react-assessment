@@ -199,7 +199,7 @@ const Metrics = () => {
           />
         </Grid>
         <Grid item xs={12}>
-          <ChartMeasurements metrics={selectedMetrics} data={measurements} recentMeasurements={recentMeasurements} />
+          <ChartMeasurements measurements={measurements} />
         </Grid>
       </Grid>
     </div>
