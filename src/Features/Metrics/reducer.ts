@@ -48,7 +48,7 @@ const slice = createSlice({
     setSelectedMetrics: (state, action: PayloadAction<Array<string>>) => {
       const { payload } = action;
       if (payload.length === 0) {
-        state.selectedMetrics.map(metric => {
+        state.selectedMetrics.forEach(metric => {
           state.measurements.delete(metric);
         });
       }
