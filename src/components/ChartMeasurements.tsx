@@ -27,61 +27,56 @@ export const ChartMeasurements: FC<ComponentProps> = (props: ComponentProps) => 
   recentMeasurements.forEach((v, k) => {
     if (metrics.includes(k)) mostRecentMeasurements.push(v);
   });
-
-  if (keyedData === null) return <LinearProgress />;
-  return (
-    <div style={{ width: '100%', height: 300 }}>
-      <ResponsiveContainer>
-        <LineChart
-          width={1200}
-          height={600}
-          data={keyedData}
-          margin={{
-            top: 5,
-            right: 30,
-            left: 20,
-            bottom: 5,
-          }}
+  const yAxis = mostRecentMeasurements
+    .sort((a, b) => (a.unit < b.unit ? -1 : 1))
+    .map(id => {
+      return (
+        <YAxis
+          width={80}
+          yAxisId={`${id.unit}`}
+          tick={{ fontSize: 10 }}
+          type="number"
+          key={`yaxis__${id.metric}_${id.at}_${id.value}`}
         >
-          <XAxis height={40} dataKey="at" tick={{ fontSize: 10 }}>
-            <Label value="at" position="insideBottom" fontSize={14} fill="#676767" />
-          </XAxis>
-          {mostRecentMeasurements
-            .sort((a, b) => (a.unit < b.unit ? -1 : 1))
-            .map(id => {
-              return (
-                <YAxis
-                  width={80}
-                  yAxisId={`${id.unit}`}
-                  tick={{ fontSize: 10 }}
-                  type="number"
-                  key={`yaxis__${id.metric}_${id.at}_${id.value}`}
-                >
-                  <Label
-                    value={`${id.unit}`}
-                    angle={-90}
-                    position="insideTopLeft"
-                    fill="#676767"
-                    fontSize={12}
-                    key={`label_${id.metric}_${id.at}_${id.value}`}
-                  />
-                </YAxis>
-              );
-            })}
-          {mostRecentMeasurements.map(id => {
-            return (
-              <Line
-                key={`line_${id.metric}`}
-                dataKey="dataKey"
-                yAxisId={`${id.unit}`}
-                stroke="black"
-                animationDuration={0}
-              />
-            );
-          })}
-          <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+          <Label
+            value={`${id.unit}`}
+            angle={-90}
+            position="insideTopLeft"
+            fill="#676767"
+            fontSize={12}
+            key={`label_${id.metric}_${id.at}_${id.value}`}
+          />
+        </YAxis>
+      );
+    });
+  const lines = mostRecentMeasurements.map(id => {
+    return (
+      <Line key={`line_${id.metric}`} dataKey="dataKey" yAxisId={`${id.unit}`} stroke="black" animationDuration={0} />
+    );
+  });
+  // console.log(lines);
+  // console.log(yAxis);
+  // if (keyedData.length === 0) return <LinearProgress />;
+  const chart = (
+    <LineChart
+      width={1200}
+      height={600}
+      data={keyedData}
+      margin={{
+        top: 5,
+        right: 30,
+        left: 20,
+        bottom: 5,
+      }}
+    >
+      <XAxis height={40} dataKey="at" tick={{ fontSize: 10 }}>
+        <Label value="at" position="insideBottom" fontSize={14} fill="#676767" />
+      </XAxis>
+      {yAxis.flat()}
+      {lines.flat()}
+      <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+    </LineChart>
   );
+  console.log(chart);
+  return chart;
 };

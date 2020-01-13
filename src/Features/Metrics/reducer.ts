@@ -76,7 +76,7 @@ const slice = createSlice({
       if (state.selectedMetrics.includes(payload.metric)) {
         const KeyedPayload: KeyedData = {
           ...payload,
-          dataKey: `${payload.metric}_${payload.at}`,
+          dataKey: `${payload.at}_${payload.value}`,
         };
         state.measurements.push(KeyedPayload);
       }
@@ -95,7 +95,7 @@ const slice = createSlice({
       state.measurements = A.map(a => {
         const KeyedPayload: KeyedData = {
           ...a,
-          dataKey: `${a.metric}_${a.at}`,
+          dataKey: `${a.at}_${a.value}`,
         };
         return KeyedPayload;
       });
