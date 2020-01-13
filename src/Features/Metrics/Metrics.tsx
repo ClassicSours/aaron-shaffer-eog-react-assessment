@@ -83,6 +83,19 @@ const client = createClient({
   ],
 });
 
+function lazyGetColor(str: string): string {
+  var hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  var colour = '#';
+  for (let i = 0; i < 3; i++) {
+    var value = (hash >> (i * 8)) & 0xff;
+    colour += ('00' + value.toString(16)).substr(-2);
+  }
+  return colour;
+}
+
 export default () => {
   return (
     <Provider value={client}>
@@ -182,6 +195,7 @@ const Metrics = () => {
                     handleDelete={handleDelete}
                     dispatch={dispatch}
                     actions={actions}
+                    lazyGetColor={lazyGetColor}
                   />
                 </GridListTile>
               );
@@ -198,8 +212,10 @@ const Metrics = () => {
             handleDelete={handleDelete}
           />
         </Grid>
-        <Grid item xs={12}>
-          <ChartMeasurements measurements={measurements} />
+        <Grid item xs={12} className={classes.item}>
+          <GridList cellHeight={300} className={classes.gridList} cols={3}>
+            <ChartMeasurements measurements={measurements} lazyGetColor={lazyGetColor} />
+          </GridList>
         </Grid>
       </Grid>
     </div>

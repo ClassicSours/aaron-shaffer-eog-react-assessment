@@ -16,10 +16,11 @@ interface ComponentProps {
   classes: any;
   dispatch: any;
   actions: any;
+  lazyGetColor: any;
 }
 
 export const MeasurementCard: FC<ComponentProps> = (props: ComponentProps) => {
-  const { metricName, classes, measurements, handleDelete, dispatch, actions } = props;
+  const { metricName, classes, measurements, handleDelete, dispatch, actions, lazyGetColor } = props;
   const measurement = measurements.get(metricName);
   // request a metric
   const [LAST_KNOWN_MEASUREMENT, GET_LAST_KNOWN_MEASUREMENT] = useQuery({
@@ -39,7 +40,6 @@ export const MeasurementCard: FC<ComponentProps> = (props: ComponentProps) => {
     GET_LAST_KNOWN_MEASUREMENT();
     dispatch(actions.lastKnownMeasurementDataRecieved(newMeasurement));
   });
-
   return (
     <Card className={classes.card}>
       {measurement !== undefined ? (
@@ -56,6 +56,9 @@ export const MeasurementCard: FC<ComponentProps> = (props: ComponentProps) => {
             component: 'h3',
             noWrap: true,
             className: classes.subheader,
+            style: {
+              color: lazyGetColor(metricName),
+            },
           }}
           action={
             <IconButton className={classes.iconButton} onClick={e => handleDelete(metricName)}>

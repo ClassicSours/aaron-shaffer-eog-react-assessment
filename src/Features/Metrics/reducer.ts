@@ -9,8 +9,6 @@ import {
   MEASUREMENTS,
 } from '../../resources/types';
 
-const now = new Date();
-
 interface MetricsInterface {
   heartBeat: number;
   metrics: Array<string>;
@@ -24,7 +22,7 @@ interface MetricsInterface {
 
 const initialState: MetricsInterface = {
   // milliseoncs since epoch, since application started
-  heartBeat: now.getTime(),
+  heartBeat: -1,
   // drop down values
   metrics: new Array<string>(),
   // select values
@@ -53,10 +51,15 @@ const slice = createSlice({
         });
       }
       state.selectedMetrics = payload;
+      const now = new Date();
+      const n_seconds_ago = now.getTime() - 20000;
+      if (state.heartBeat === -1 || state.heartBeat < n_seconds_ago) {
+        state.heartBeat = n_seconds_ago;
+      }
       state.measurementQuery = payload.map<MEASUREMENTS_QUERY>(metric => {
         return {
           metricName: metric,
-          after: state.heartBeat - 30000,
+          after: state.heartBeat,
         };
       });
     },
@@ -81,6 +84,8 @@ const slice = createSlice({
           state.measurements.set(metric, new_measurements);
         } else {
           old_measurements.measurements.push(payload);
+          if (old_measurements.measurements.length >= 30)
+            old_measurements.measurements = old_measurements.measurements.slice(1).slice(-30);
           state.measurements.set(metric, old_measurements);
         }
       }
@@ -96,10 +101,20 @@ const slice = createSlice({
         const { metric } = new_measurements;
         const old_measurements = state.measurements.get(metric);
         if (!old_measurements) {
+          if (new_measurements.measurements.length > 30) new_measurements.measurements.slice(1).slice(-30);
           state.measurements.set(metric, new_measurements);
         } else {
           const { measurements } = new_measurements;
           old_measurements.measurements.push(...measurements);
+          const uniq = old_measurements.measurements
+            .sort((a, b) => {
+              return a.at - b.at;
+            })
+            .filter(function(item, pos, ary) {
+              return !pos || item !== ary[pos - 1];
+            });
+          old_measurements.measurements = uniq;
+          if (old_measurements.measurements.length > 30) old_measurements.measurements.slice(1).slice(-30);
           state.measurements.set(metric, old_measurements);
         }
       });
@@ -107,6 +122,5 @@ const slice = createSlice({
     metricsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state,
   },
 });
-
 export const reducer = slice.reducer;
 export const actions = slice.actions;
