@@ -65,17 +65,19 @@ const slice = createSlice({
       const { payload } = action;
       const { metric } = payload;
       state.recentMeasurements.set(metric, payload);
-      const old_measurements = state.measurements.get(metric);
-      if (!old_measurements) {
-        const new_measurements: MEASUREMENTS = {
-          metric: metric,
-          measurements: [payload],
-          __typename: 'MEASUREMENTS',
-        };
-        state.measurements.set(metric, new_measurements);
-      } else {
-        old_measurements.measurements.push(payload);
-        state.measurements.set(metric, old_measurements);
+      if (state.selectedMetrics.includes(metric)) {
+        const old_measurements = state.measurements.get(metric);
+        if (!old_measurements) {
+          const new_measurements: MEASUREMENTS = {
+            metric: metric,
+            measurements: [payload],
+            __typename: 'MEASUREMENTS',
+          };
+          state.measurements.set(metric, new_measurements);
+        } else {
+          old_measurements.measurements.push(payload);
+          state.measurements.set(metric, old_measurements);
+        }
       }
     },
     setHeartbeat: (state, action: PayloadAction<Heartbeat>) => {
