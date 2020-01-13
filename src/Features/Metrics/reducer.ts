@@ -5,8 +5,8 @@ import {
   MULTIPLE_MEASUREMENTS,
   MEASUREMENTS_QUERY,
   MEASUREMENT,
-  MEASUREMENTS,
   Heartbeat,
+  MEASUREMENTS,
 } from '../../resources/types';
 
 const now = new Date();
@@ -17,7 +17,7 @@ interface MetricsInterface {
   selectedMetrics: Array<string>;
 
   measurementQuery: Array<MEASUREMENTS_QUERY>;
-  measurements: Array<MEASUREMENT>;
+  measurements: Array<KeyedData>;
 
   recentMeasurements: Map<string, MEASUREMENT>;
 }
@@ -32,10 +32,18 @@ const initialState: MetricsInterface = {
   // query generated from selected metrics
   measurementQuery: new Array<MEASUREMENTS_QUERY>(),
   // data for chart
-  measurements: new Array<MEASUREMENT>(),
+  measurements: new Array<KeyedData>(),
   // most recent measurement data as a map O(1)?
   recentMeasurements: new Map<string, MEASUREMENT>(),
 };
+
+interface KeyedData {
+  metric: string;
+  at: number;
+  unit: string;
+  value: number;
+  dataKey: string;
+}
 
 const slice = createSlice({
   name: 'metrics',
@@ -48,17 +56,30 @@ const slice = createSlice({
     setSelectedMetrics: (state, action: PayloadAction<Array<string>>) => {
       const { payload } = action;
       state.selectedMetrics = payload;
+      state.measurementQuery = payload.map<MEASUREMENTS_QUERY>(metric => {
+        return {
+          metricName: metric,
+          after: state.heartBeat - 30000,
+        };
+      });
     },
     removeSelectedMetric: (state, action: PayloadAction<string>) => {
       let { payload } = action;
       state.selectedMetrics = state.selectedMetrics.filter(metric => metric !== payload);
       state.measurements = state.measurements.filter(measurement => measurement.metric !== payload);
+      state.measurementQuery = state.measurementQuery.filter(mq => mq.metricName !== payload);
     },
     measurementDataRecieved: (state, action: PayloadAction<MEASUREMENT>) => {
       const { payload } = action;
       const { metric } = payload;
       state.recentMeasurements.set(metric, payload);
-      state.measurements.push(payload);
+      if (state.selectedMetrics.includes(payload.metric)) {
+        const KeyedPayload: KeyedData = {
+          ...payload,
+          dataKey: `${payload.metric}_${payload.at}`,
+        };
+        state.measurements.push(KeyedPayload);
+      }
     },
     setHeartbeat: (state, action: PayloadAction<Heartbeat>) => {
       const { heartBeat } = action.payload;
@@ -66,8 +87,17 @@ const slice = createSlice({
     },
     multipleMeasurementsDataReceived: (state, action: PayloadAction<MULTIPLE_MEASUREMENTS>) => {
       const { getMultipleMeasurements } = action.payload;
-      getMultipleMeasurements.forEach(multipleMeasurements => {
-        state.measurements.concat([...multipleMeasurements.measurements]);
+      const A = getMultipleMeasurements
+        .map((v, k) => {
+          return [...v.measurements];
+        })
+        .flat();
+      state.measurements = A.map(a => {
+        const KeyedPayload: KeyedData = {
+          ...a,
+          dataKey: `${a.metric}_${a.at}`,
+        };
+        return KeyedPayload;
       });
     },
     metricsApiErrorReceived: (state, action: PayloadAction<ApiErrorAction>) => state,

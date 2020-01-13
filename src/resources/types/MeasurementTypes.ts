@@ -1,5 +1,3 @@
-import Measurements from '../../Features/Measurements/Measurements';
-
 export type MEASUREMENT = {
   metric: string;
   at: number;
@@ -8,6 +6,13 @@ export type MEASUREMENT = {
   __typename: string;
 };
 
+export type KEYED_MEASUREMENT = {
+  metric: string;
+  at: number;
+  unit: string;
+  value: number;
+  dataKey: string;
+};
 export type MEASUREMENTS = {
   metric: string;
   measurements: Array<MEASUREMENT>;

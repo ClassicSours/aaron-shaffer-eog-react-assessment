@@ -1,33 +1,87 @@
-import React, { FC } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Provider, useQuery, createClient } from 'urql';
+import React, { FC, useState, useEffect } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Label, ResponsiveContainer } from 'recharts';
-import { isSelectionNode } from 'graphql';
-import { MEASUREMENT } from '../resources/types';
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Label, ResponsiveContainer, Legend } from 'recharts';
+import { MEASUREMENT, KEYED_MEASUREMENT } from '../resources/types';
+import { LinearProgress } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) => createStyles({}));
 
 interface ComponentProps {
-  data: any;
+  recentMeasurements: Map<string, MEASUREMENT>;
+  data: KEYED_MEASUREMENT[];
+  metrics: string[];
 }
+
 export const ChartMeasurements: FC<ComponentProps> = (props: ComponentProps) => {
-  const { data } = props;
-  return null;
-  // <LineChart width={1000} height={500} data={data}>
-  //   <XAxis height={40} dataKey="" tick={{ fontSize: 10 }}>
-  //     <Label value="at" position="insideBottom" fontSize={14} fill="#676767" />
-  //   </XAxis>
-  //   {data.map((c, i) => {
-  //     return (
-  //       <YAxis width={80} yAxisId={c[0].unit} tick={{ fontSize: 10 }}>
-  //         <Label value={c[0].unit} angle={-90} position="insideTopLeft" fill="#676767" fontSize={12} key={i} />
-  //       </YAxis>
-  //     );
-  //   })}
-  //   {data.map((c, i) => {
-  //     return <Line yAxisId={c[0].unit} type="monotone" dataKey="value" stroke="black" key={i} />;
-  //   })}
-  //   <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-  // </LineChart>
+  const { data, metrics, recentMeasurements } = props;
+  const [keyedData, setKeyedData] = useState(() => {
+    const initialState = data;
+    return initialState;
+  });
+  useEffect(() => {
+    if (data.length > keyedData.length + 60) {
+      setKeyedData(data);
+    }
+  }, [data, keyedData]);
+  let mostRecentMeasurements = new Array<MEASUREMENT>();
+  recentMeasurements.forEach((v, k) => {
+    if (metrics.includes(k)) mostRecentMeasurements.push(v);
+  });
+
+  if (keyedData === null) return <LinearProgress />;
+  return (
+    <div style={{ width: '100%', height: 300 }}>
+      <ResponsiveContainer>
+        <LineChart
+          width={1200}
+          height={600}
+          data={keyedData}
+          margin={{
+            top: 5,
+            right: 30,
+            left: 20,
+            bottom: 5,
+          }}
+        >
+          <XAxis height={40} dataKey="at" tick={{ fontSize: 10 }}>
+            <Label value="at" position="insideBottom" fontSize={14} fill="#676767" />
+          </XAxis>
+          {mostRecentMeasurements
+            .sort((a, b) => (a.unit < b.unit ? -1 : 1))
+            .map(id => {
+              return (
+                <YAxis
+                  width={80}
+                  yAxisId={`${id.unit}`}
+                  tick={{ fontSize: 10 }}
+                  type="number"
+                  key={`yaxis__${id.metric}_${id.at}_${id.value}`}
+                >
+                  <Label
+                    value={`${id.unit}`}
+                    angle={-90}
+                    position="insideTopLeft"
+                    fill="#676767"
+                    fontSize={12}
+                    key={`label_${id.metric}_${id.at}_${id.value}`}
+                  />
+                </YAxis>
+              );
+            })}
+          {mostRecentMeasurements.map(id => {
+            return (
+              <Line
+                key={`line_${id.metric}`}
+                dataKey="dataKey"
+                yAxisId={`${id.unit}`}
+                stroke="black"
+                animationDuration={0}
+              />
+            );
+          })}
+          <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
 };

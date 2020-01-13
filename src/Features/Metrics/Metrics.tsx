@@ -2,15 +2,6 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { IState } from '../../store';
 import { actions } from './reducer';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import IconButton from '@material-ui/core/IconButton';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import Chip from '@material-ui/core/Chip';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import CloseIcon from '@material-ui/icons/Close';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { getMetrics, heartBeat, getMultipleMeasurements } from '../../resources/queries';
 import {
@@ -29,17 +20,30 @@ import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
 import { newMeasurement } from '../../resources/queries';
 import { MeasurementCard } from '../../components/MeasurementCard';
+import { SelectMetrics } from '../../components/SelectMetrics';
+import { useEffectOnce } from 'react-use';
+import { ChartMeasurements } from '../../components/ChartMeasurements';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       flexGrow: 1,
     },
-    gridList: {
+    item: {
       height: '100%',
       width: '100%',
     },
-    grid: {
+    container: {
+      width: '100%',
       padding: '30px',
+    },
+    gridList: {
+      margin: '15px',
+    },
+    tile: {
+      textColor: 'black',
+      minWidth: '325px',
+      width: '100%',
+      border: '10px',
     },
     formControl: {
       width: '100%',
@@ -100,6 +104,7 @@ const Metrics = () => {
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     dispatch(actions.setSelectedMetrics(event.target.value as string[]));
+    executeQuery();
   };
 
   const handleClear = () => {
@@ -110,74 +115,93 @@ const Metrics = () => {
     dispatch(actions.removeSelectedMetric(metricName));
   };
 
-  // first get metrics for the drop down.
-  const [METRICS_RESULT] = useQuery({ query: getMetrics });
-  let { fetching } = METRICS_RESULT;
-  const { data, error } = METRICS_RESULT;
-  useEffect(() => {
-    if (error) {
-      dispatch(actions.metricsApiErrorReceived({ error: error.message }));
+  // step zero, get heartbeat ( essentially ping )
+  const [HEARTBEAT_RESULT] = useQuery({ query: heartBeat, requestPolicy: 'cache-only' });
+  useEffectOnce(() => {
+    if (HEARTBEAT_RESULT.error) {
+      dispatch(actions.metricsApiErrorReceived({ error: HEARTBEAT_RESULT.error.message }));
       return;
     }
-    if (!data) return;
-    dispatch(actions.setMetrics(data));
-  }, [dispatch, error, data]);
-  if (fetching) return <LinearProgress />;
+    if (!HEARTBEAT_RESULT.data) return;
+    const { data } = HEARTBEAT_RESULT;
+    dispatch(actions.setHeartbeat(data));
+  });
+
+  // first get metrics for the drop down.
+  const [METRICS_RESULT] = useQuery({ query: getMetrics });
+  useEffect(() => {
+    if (METRICS_RESULT.error) {
+      dispatch(actions.metricsApiErrorReceived({ error: METRICS_RESULT.error.message }));
+      return;
+    }
+    if (!METRICS_RESULT.data) return;
+    dispatch(actions.setMetrics(METRICS_RESULT.data));
+  }, [dispatch, METRICS_RESULT.error, METRICS_RESULT.data]);
+
+  // subscribe to metrics
+  const [SUBSCRIPTION_RESULTS] = useSubscription({ query: newMeasurement });
+  useEffect(() => {
+    if (SUBSCRIPTION_RESULTS.error) {
+      dispatch(actions.metricsApiErrorReceived({ error: SUBSCRIPTION_RESULTS.error.message }));
+      return;
+    }
+    if (!SUBSCRIPTION_RESULTS.data) return;
+    const { newMeasurement } = SUBSCRIPTION_RESULTS.data;
+    dispatch(actions.measurementDataRecieved(newMeasurement));
+  }, [dispatch, SUBSCRIPTION_RESULTS.data, SUBSCRIPTION_RESULTS.error]);
+
+  // query for multiple metrics (since program start)
+  const [multipleMeasurements, executeQuery] = useQuery({
+    query: getMultipleMeasurements,
+    variables: {
+      input: measurementQuery,
+    },
+    requestPolicy: 'cache-and-network',
+  });
+  useEffect(() => {
+    if (multipleMeasurements.error) {
+      dispatch(actions.metricsApiErrorReceived({ error: multipleMeasurements.error.message }));
+      return;
+    }
+    if (!multipleMeasurements.data) return;
+    dispatch(actions.multipleMeasurementsDataReceived(multipleMeasurements.data));
+  }, [dispatch, multipleMeasurements.error, multipleMeasurements.data]);
 
   return (
-    <FormControl className={classes.formControl} variant="outlined">
-      <InputLabel>Metrics</InputLabel>
-      <Select
-        multiple
-        value={selectedMetrics}
-        onChange={handleChange}
-        className={classes.select}
-        endAdornment={
-          <InputAdornment position="start">
-            <IconButton className={classes.iconButton} onClick={handleClear}>
-              <CloseIcon />
-            </IconButton>
-          </InputAdornment>
-        }
-        renderValue={selected => (
-          <div className={classes.chips}>
-            {(selected as string[]).map(value => (
-              <Chip
-                key={value}
-                label={value}
-                className={classes.chip}
-                onDelete={e => handleDelete(value)}
-                deleteIcon={<CloseIcon id={value} />}
-              />
-            ))}
-          </div>
-        )}
-        MenuProps={{
-          anchorOrigin: {
-            vertical: 'bottom',
-            horizontal: 'left',
-          },
-          transformOrigin: {
-            vertical: 'top',
-            horizontal: 'left',
-          },
-          getContentAnchorEl: null,
-        }}
-      >
-        {selectedMetrics.length === metrics.length ? (
-          <MenuItem disabled key={''} value={''}>
-            {'No Options'}
-          </MenuItem>
-        ) : (
-          metrics
-            .filter(metric => !selectedMetrics.includes(metric))
-            .map(metric => (
-              <MenuItem key={metric} value={metric}>
-                {metric}
-              </MenuItem>
-            ))
-        )}
-      </Select>
-    </FormControl>
+    <div className={classes.root}>
+      <Grid container alignContent={'center'} alignItems={'flex-start'} spacing={1} className={classes.container}>
+        <Grid item xs={9} className={classes.item}>
+          <GridList cellHeight={100} className={classes.gridList} cols={3}>
+            {selectedMetrics.map(metric => {
+              return (
+                <GridListTile key={metric} cols={1} className={classes.tile}>
+                  <MeasurementCard
+                    metricName={metric}
+                    classes={classes}
+                    measurements={recentMeasurements}
+                    handleDelete={handleDelete}
+                    dispatch={dispatch}
+                    actions={actions}
+                  />
+                </GridListTile>
+              );
+            })}
+          </GridList>
+        </Grid>
+        <Grid item xs={3}>
+          <SelectMetrics
+            metrics={metrics}
+            selectedMetrics={selectedMetrics}
+            classes={classes}
+            handleChange={handleChange}
+            handleClear={handleClear}
+            handleDelete={handleDelete}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <ChartMeasurements metrics={selectedMetrics} data={measurements} recentMeasurements={recentMeasurements} />
+        </Grid>
+      </Grid>
+    </div>
   );
 };
